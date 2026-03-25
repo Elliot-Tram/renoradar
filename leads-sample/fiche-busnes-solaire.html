@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RénoRadar — Solaire — 1421 Rue de Lillers, Busnes</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --accent: #F59E0B;
+    --accent-dark: #D97706;
+    --accent-light: #FEF3C7;
+    --accent-border: #FDE68A;
+    --black: #1A1A1A;
+    --dark: #2D2D2D;
+    --gray-900: #333333;
+    --gray-600: #6B6B6B;
+    --gray-400: #999999;
+    --gray-200: #E0E0E0;
+    --gray-100: #F0F0F0;
+    --gray-50: #F7F7F7;
+    --white: #FFFFFF;
+    --red: #E53E3E;
+    --red-light: #FFF5F5;
+    --red-border: #FED7D7;
+    --green: #38A169;
+    --green-light: #F0FFF4;
+    --green-border: #C6F6D5;
+    --orange: #DD6B20;
+    --orange-light: #FFFAF0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: var(--black);
+    background: var(--gray-50);
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page { size: A4; margin: 12mm 14mm; }
+
+  .page {
+    width: 100%;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 20px 28px;
+    background: var(--white);
+  }
+
+  @media print {
+    body { background: var(--white); }
+    .page { padding: 10px 16px; }
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--gray-100);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-logo { width: 44px; height: 44px; }
+
+  .brand-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .brand-sub {
+    font-size: 12px;
+    color: var(--gray-600);
+    font-weight: 400;
+  }
+
+  .score-badge { text-align: right; }
+
+  .score-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .score-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--black);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .score-max {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    color: var(--gray-400);
+    font-weight: 600;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .score-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--black);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 4px;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .section { margin-bottom: 12px; }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--black);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 3px solid var(--accent);
+    display: inline-block;
+  }
+
+  .section-title-wrap { margin-bottom: 6px; }
+
+  .property-card {
+    background: var(--gray-50);
+    border-radius: 10px;
+    padding: 12px 16px;
+    border: 1px solid var(--gray-200);
+  }
+
+  .property-address {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.5px;
+    margin-bottom: 2px;
+  }
+
+  .property-city {
+    font-size: 15px;
+    color: var(--gray-600);
+    margin-bottom: 16px;
+  }
+
+  .property-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    color: var(--gray-900);
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+  .stat-card {
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.5px;
+  }
+
+  .stat-value.danger { color: var(--red); }
+  .stat-value.warning { color: var(--orange); }
+  .stat-value.success { color: var(--green); }
+  .stat-value.solar { color: var(--accent-dark); }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 500;
+  }
+
+  .owner-card {
+    background: var(--white);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px 20px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .owner-type {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .owner-alert-solar {
+    padding: 12px 16px;
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    line-height: 1.4;
+  }
+
+  .key-points {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .key-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+  }
+
+  .key-point-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .kpi-sun { background: var(--accent-light); color: var(--accent-dark); border: 1px solid var(--accent-border); }
+  .kpi-money { background: #FFFFF0; color: var(--black); border: 1px solid #FEFCBF; }
+  .kpi-eco { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+  .kpi-value { background: #EBF8FF; color: #2B6CB0; border: 1px solid #BEE3F8; }
+
+  .key-point-text {
+    font-size: 12px;
+    color: var(--gray-600);
+    line-height: 1.4;
+  }
+
+  .key-point-text strong {
+    color: var(--black);
+    font-weight: 700;
+    font-size: 13px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .objections-wrap {
+    background: var(--gray-50);
+    border-radius: 10px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--gray-200);
+  }
+
+  .objection {
+    display: flex;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-200);
+    align-items: baseline;
+  }
+
+  .objection:last-child { border-bottom: none; padding-bottom: 0; }
+  .objection:first-child { padding-top: 0; }
+
+  .objection-q {
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-dark);
+    min-width: 130px;
+  }
+
+  .objection-a {
+    font-size: 13px;
+    color: var(--gray-900);
+    line-height: 1.5;
+  }
+
+  .footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 2px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--gray-600);
+    font-size: 11px;
+  }
+
+  .prepared-for {
+    background: var(--black);
+    color: var(--white);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .prepared-label {
+    font-size: 11px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .prepared-company {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .prepared-meta {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  .prepared-right { text-align: right; }
+
+  .prepared-zone {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  .prepared-specialty {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .tag-specialty {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--black);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+
+  .cta-banner {
+    background: var(--gray-50);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .cta-count {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--black);
+    line-height: 1;
+  }
+
+  .cta-count em {
+    color: var(--accent-dark);
+    font-style: normal;
+  }
+
+  .cta-text {
+    font-size: 15px;
+    color: var(--gray-600);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .cta-text strong { color: var(--black); }
+
+  .cta-contact {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--gray-400);
+  }
+
+  .cta-contact a {
+    color: var(--black);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  /* -- SOLAR-SPECIFIC -- */
+  .solar-estimation {
+    background: var(--accent-light);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+
+  .solar-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-dark);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .solar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .solar-card {
+    background: var(--white);
+    border: 1.5px solid var(--accent-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: center;
+  }
+
+  .solar-card-label {
+    font-size: 10px;
+    color: var(--gray-400);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .solar-card-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent-dark);
+    letter-spacing: -0.5px;
+  }
+
+  .solar-card-sub {
+    font-size: 10px;
+    color: var(--gray-400);
+    font-weight: 500;
+  }
+
+  .roi-bar {
+    margin-top: 12px;
+    background: var(--white);
+    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--accent-border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .roi-bar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-600);
+    min-width: 120px;
+  }
+
+  .roi-bar-track {
+    flex: 1;
+    height: 24px;
+    background: var(--gray-100);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .roi-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+  }
+
+  .roi-bar-marker {
+    position: absolute;
+    top: -2px;
+    height: 28px;
+    width: 3px;
+    background: var(--black);
+    border-radius: 2px;
+  }
+
+  .roi-bar-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent-dark);
+    min-width: 80px;
+    text-align: right;
+  }
+
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    border: 1.5px solid var(--accent-border);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-dark);
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="20" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-dasharray="95 32"/>
+        <circle cx="24" cy="24" r="14" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-dasharray="66 22"/>
+        <circle cx="24" cy="24" r="8" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-dasharray="38 13"/>
+        <circle cx="24" cy="24" r="3" fill="#1A1A1A"/>
+        <line x1="24" y1="24" x2="38" y2="10" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">
+        <div class="brand-name">RénoRadar</div>
+        <div class="brand-sub">Détectez les passoires thermiques près de chez vous</div>
+      </div>
+    </div>
+    <div class="score-badge">
+      <div class="score-label">Score solaire</div>
+      <div class="score-row">
+        <div class="score-value">92</div>
+        <div class="score-max">/100</div>
+      </div>
+      <div class="score-tag">Potentiel solaire fort</div>
+    </div>
+  </div>
+
+  <!-- TYPE BADGE -->
+  <div class="type-badge">&#9728; Fiche Panneaux Solaires Photovoltaïques</div>
+
+  <!-- PREPARE POUR -->
+  <div class="prepared-for">
+    <div class="prepared-left">
+      <div>
+        <div class="prepared-label">Fiche préparée pour</div>
+        <div class="prepared-company">VERIZO &amp; PARTENAIRE SOLAIRE</div>
+        <div class="prepared-meta">Installateur photovoltaïque — Secteur Béthune (62)</div>
+      </div>
+    </div>
+    <div class="prepared-right">
+      <div class="prepared-zone">Zone d'intervention</div>
+      <div class="prepared-specialty">Busnes — 5 min de Gonnehem</div>
+    </div>
+  </div>
+
+  <!-- BIEN -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Bien identifié</div></div>
+    <div class="property-card">
+      <a href="https://www.google.com/maps/search/?api=1&query=1421+Rue+de+Lillers+62350+Busnes" target="_blank" class="property-address" style="text-decoration:none;color:inherit;display:block;">1421 Rue de Lillers <span style="font-size:13px;color:var(--gray-400);font-weight:500;">&#x1F4CD; Voir sur Google Maps</span></a>
+      <div class="property-city">62350 Busnes — Pas-de-Calais</div>
+      <div class="property-tags">
+        <span class="tag">Maison individuelle</span>
+        <span class="tag">366 m²</span>
+        <span class="tag">Avant 1948</span>
+        <span class="tag">Toiture isolée</span>
+        <span class="tag">Aucun panneau solaire</span>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:var(--gray-400);">
+        Source : <a href="https://observatoire-dpe-audit.ademe.fr/donnees-dpe-publiques" target="_blank" style="color:var(--gray-600);text-decoration:underline;">Observatoire DPE — ADEME</a> (données publiques, mises à jour chaque semaine)
+      </div>
+    </div>
+  </div>
+
+  <!-- CONSOMMATION ELECTRIQUE -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Profil énergétique</div></div>
+    <div class="grid-4">
+      <div class="stat-card">
+        <div class="stat-label">DPE</div>
+        <div class="stat-value warning">D</div>
+        <div class="stat-sub">GES : C</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Facture annuelle</div>
+        <div class="stat-value danger">9 764 €</div>
+        <div class="stat-sub">par an</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Consommation</div>
+        <div class="stat-value danger">54 118</div>
+        <div class="stat-sub">kWh/an</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Chauffage</div>
+        <div class="stat-value">Électrique</div>
+        <div class="stat-sub">+ appoint fioul</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESTIMATION SOLAIRE -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Estimation installation solaire</div></div>
+    <div class="solar-estimation">
+      <div class="solar-title">&#9728; Simulation pour une installation 9 kWc</div>
+      <div class="solar-grid">
+        <div class="solar-card">
+          <div class="solar-card-label">Production</div>
+          <div class="solar-card-value">9 000</div>
+          <div class="solar-card-sub">kWh/an estimé</div>
+        </div>
+        <div class="solar-card">
+          <div class="solar-card-label">Autoconsommation</div>
+          <div class="solar-card-value">70%</div>
+          <div class="solar-card-sub">6 300 kWh consommés</div>
+        </div>
+        <div class="solar-card">
+          <div class="solar-card-label">Économie annuelle</div>
+          <div class="solar-card-value">1 890 €</div>
+          <div class="solar-card-sub">auto + surplus vendu</div>
+        </div>
+        <div class="solar-card">
+          <div class="solar-card-label">Installation</div>
+          <div class="solar-card-value">13-17 k€</div>
+          <div class="solar-card-sub">avant aides</div>
+        </div>
+      </div>
+
+      <div class="roi-bar">
+        <div class="roi-bar-label">Retour sur investissement</div>
+        <div class="roi-bar-track">
+          <div class="roi-bar-fill" style="width:28%;"></div>
+          <div class="roi-bar-marker" style="left:28%;"></div>
+        </div>
+        <div class="roi-bar-value">7-8 ans</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AIDES -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Aides et revenus solaires</div></div>
+    <div class="grid-3">
+      <div class="stat-card">
+        <div class="stat-label">Prime autoconsommation</div>
+        <div class="stat-value solar">720 €</div>
+        <div class="stat-sub">9 kWc x 80 €/kWc</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Surplus vendu EDF OA</div>
+        <div class="stat-value solar">351 €</div>
+        <div class="stat-sub">2 700 kWh x 0,13 €/kWh</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Économie autoconso</div>
+        <div class="stat-value solar">1 575 €</div>
+        <div class="stat-sub">6 300 kWh non achetés</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POURQUOI CE BIEN -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Pourquoi ce bien est idéal pour du solaire</div></div>
+    <div class="owner-card" style="border-color: var(--accent);">
+      <div class="owner-type">Profil propriétaire</div>
+      <div style="font-size: 14px; color: var(--gray-900); line-height: 1.6; margin-bottom: 14px;">
+        Pas de société identifiée à cette adresse. Le DPE a été réalisé le 5 janvier 2026, ce qui indique une démarche active du propriétaire (vente, audit ou mise en conformité).
+      </div>
+      <div class="owner-alert-solar">
+        366 m² de maison = toiture très grande. Chauffage 100% électrique = taux d'autoconsommation maximal (le solaire alimente directement le chauffage en journée). Toiture isolée = structure saine pour recevoir des panneaux. Facture de 9 764 €/an = motivation financière très forte.
+      </div>
+    </div>
+  </div>
+
+  <!-- ARGUMENTS -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Arguments clés</div></div>
+    <div class="key-points">
+      <div class="key-point">
+        <div class="key-point-icon kpi-sun">&#9728;</div>
+        <div class="key-point-text">
+          <strong>Toiture XXL = potentiel maximum</strong>
+          366 m² de maison, toiture isolée en bon état. Largement de quoi poser 9 kWc voire plus, sans contrainte de place.
+        </div>
+      </div>
+      <div class="key-point">
+        <div class="key-point-icon kpi-money">€</div>
+        <div class="key-point-text">
+          <strong>9 764 €/an de facture électrique</strong>
+          C'est plus de 800 € par mois. Chaque kWh autoproduit est un kWh en moins sur la facture. L'argument se vend tout seul.
+        </div>
+      </div>
+      <div class="key-point">
+        <div class="key-point-icon kpi-eco">A</div>
+        <div class="key-point-text">
+          <strong>Chauffage électrique = autoconso optimale</strong>
+          Le solaire alimente directement le chauffage en journée. Pas de batterie nécessaire pour atteindre 70% d'autoconsommation.
+        </div>
+      </div>
+      <div class="key-point">
+        <div class="key-point-icon kpi-value">+</div>
+        <div class="key-point-text">
+          <strong>Rentabilisé en 7-8 ans, rentable 25+ ans</strong>
+          Les panneaux sont garantis 25 ans. Après le retour sur investissement, c'est du bénéfice net : ~1 900 €/an pendant 17+ ans.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACTER -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Comment contacter ce propriétaire</div></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:10px;padding:16px 18px;">
+        <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:6px;">Option 1 — Visite sur place</div>
+        <div style="font-size:13px;color:var(--gray-600);line-height:1.5;">Ce bien est à Busnes, à 5 minutes de Gonnehem. Passez avec cette fiche : le propriétaire verra que vous connaissez sa consommation exacte et le potentiel de son toit.</div>
+      </div>
+      <div style="background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:10px;padding:16px 18px;">
+        <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:6px;">Option 2 — Courrier manuscrit</div>
+        <div style="font-size:13px;color:var(--gray-600);line-height:1.5;">On envoie pour vous un courrier personnalisé écrit au stylo, avec la simulation solaire et vos coordonnées. Envoyé par La Poste sous 24h. <strong>3,50 € par envoi.</strong></div>
+      </div>
+    </div>
+
+    <!-- APERCU CARTE -->
+    <div style="background:#FAF9F6;border-radius:10px;padding:20px 24px;border:1px solid #E8E4DF;position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.04);transform:rotate(-0.3deg);">
+      <div style="position:absolute;top:-9px;left:16px;background:var(--black);color:var(--white);font-size:9px;font-weight:600;padding:2px 8px;border-radius:3px;letter-spacing:0.5px;text-transform:uppercase;font-family:'Plus Jakarta Sans',sans-serif;">Aperçu du courrier</div>
+
+      <div style="font-family:'Caveat',cursive;font-size:17px;color:#2D2D2D;line-height:1.65;">
+        Bonjour,<br><br>
+        Votre maison au 1421 Rue de Lillers consomme plus de 54 000 kWh par an en électricité, soit environ 9 760 € de facture annuelle.<br><br>
+        Avec une toiture de cette taille, une installation de panneaux solaires en autoconsommation pourrait couvrir une partie importante de vos besoins et vous faire économiser environ 1 900 € par an. Le surplus est revendu à EDF.<br><br>
+        Avec la prime à l'autoconsommation et les tarifs de rachat actuels, l'installation est rentabilisée en 7 à 8 ans, puis c'est du bénéfice net pendant les 17 années suivantes.<br><br>
+        Je suis installateur certifié dans le secteur et je vous propose une étude gratuite, sans engagement, pour évaluer précisément le potentiel de votre toiture.<br><br>
+        <span style="font-size:19px;">[Installateur partenaire Verizo]</span><br>
+        <span style="font-size:16px;color:#555;">[Téléphone] — [Email]</span>
+      </div>
+
+      <div style="position:absolute;bottom:8px;right:12px;font-size:8px;color:#C4C0BA;font-family:'Plus Jakarta Sans',sans-serif;">Envoyé via RénoRadar</div>
+    </div>
+
+  </div>
+
+  <!-- OBJECTIONS -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Objections anticipées</div></div>
+    <div class="objections-wrap">
+      <div class="objection">
+        <div class="objection-q">"Le solaire, dans le<br>Nord, ça marche ?"</div>
+        <div class="objection-a">Le Pas-de-Calais produit environ 1 000 kWh/kWc/an. C'est 25% de moins que le Sud, mais les panneaux sont aussi 25% moins chers à rentabiliser grâce à votre forte consommation. Le ROI est comparable.</div>
+      </div>
+      <div class="objection">
+        <div class="objection-q">"C'est trop cher<br>à installer"</div>
+        <div class="objection-a">Une installation 9 kWc coûte entre 13 000 et 17 000 €. La prime autoconsommation couvre 720 €. Et vous récupérez 1 900 € par an entre économies et revente. C'est un investissement rentable, pas une dépense.</div>
+      </div>
+      <div class="objection">
+        <div class="objection-q">"Mon toit est<br>trop vieux"</div>
+        <div class="objection-a">Votre toiture est isolée, ce qui indique qu'elle est en bon état structurel. On vérifie tout avant installation : orientation, inclinaison, ombrage. Si une réfection est nécessaire, c'est l'occasion de coupler les deux chantiers.</div>
+      </div>
+      <div class="objection">
+        <div class="objection-q">"Je préfère<br>attendre"</div>
+        <div class="objection-a">Le prix des panneaux a baissé de 80% en 10 ans et se stabilise. Le prix de l'électricité, lui, augmente chaque année. Plus vous attendez, plus votre facture monte et plus le manque à gagner s'accumule.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-banner">
+    <div class="cta-count"><em>306</em> maisons au tout-électrique sans panneaux solaires</div>
+    <div class="cta-text">identifiées dans le <strong>secteur Béthune / Busnes / Lillers</strong><br><strong>maisons > 100 m², facture > 3 000 €/an</strong></div>
+    <div class="cta-contact">Intéressé ? Contactez Elliot — <a href="mailto:elliot.tristram@gmail.com">elliot.tristram@gmail.com</a></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-logo">
+      <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="20" stroke="#999" stroke-width="2.5" fill="none" stroke-dasharray="95 32"/>
+        <circle cx="24" cy="24" r="14" stroke="#999" stroke-width="2.5" fill="none" stroke-dasharray="66 22"/>
+        <circle cx="24" cy="24" r="8" stroke="#999" stroke-width="2.5" fill="none" stroke-dasharray="38 13"/>
+        <circle cx="24" cy="24" r="3" fill="#999"/>
+        <line x1="24" y1="24" x2="38" y2="10" stroke="#999" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      RénoRadar
+    </div>
+    <div>Données ADEME (Licence Ouverte v2.0) — DPE du 05/01/2026</div>
+    <div>Fiche générée le 25/03/2026</div>
+  </div>
+
+</div>
+</body>
+</html>

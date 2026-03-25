@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RénoRadar — Guide Prospection</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f5;
+    --bg3: #ebebeb;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.15);
+    --text: #171717;
+    --muted: #666;
+    --subtle: #999;
+    --green: #2e7d32;
+    --green-bg: rgba(46,125,50,0.07);
+    --green-border: rgba(46,125,50,0.25);
+    --purple: #6d4fc7;
+    --purple-bg: rgba(109,79,199,0.07);
+    --amber: #c77d00;
+    --amber-bg: rgba(199,125,0,0.07);
+    --blue: #2563eb;
+    --blue-bg: rgba(37,99,235,0.07);
+    --coral: #dc2626;
+    --coral-bg: rgba(220,38,38,0.07);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .header {
+    padding: 2rem 2.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -.02em;
+  }
+
+  .header-sub {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .nav {
+    display: flex;
+    gap: 2px;
+    padding: 1rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+
+  .nav-btn {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .nav-btn:hover { color: var(--text); background: var(--bg3); }
+  .nav-btn.active { color: var(--text); background: var(--bg3); border-color: var(--border2); }
+
+  .content {
+    padding: 2rem 2.5rem;
+    max-width: 860px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .script-line {
+    display: flex;
+    gap: 16px;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .script-line:last-child { border-bottom: none; }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    min-width: 80px;
+    padding: 4px 0;
+    flex-shrink: 0;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .tag.open { color: var(--green); }
+  .tag.anchor { color: var(--purple); }
+  .tag.hook { color: var(--amber); }
+  .tag.offer { color: var(--coral); }
+  .tag.cta { color: var(--blue); }
+  .tag.fallback { color: var(--muted); }
+  .tag.email { color: var(--green); }
+
+  .script-body { flex: 1; }
+  .script-text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.75;
+  }
+  .script-text .hl { font-weight: 600; }
+  .script-text .rire { color: var(--muted); font-size: 13px; font-style: italic; }
+
+  .note {
+    margin-top: .6rem;
+    padding: .6rem 1rem;
+    background: var(--bg3);
+    border-radius: var(--radius);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    border: 1px solid var(--border);
+  }
+
+  .separator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1.25rem 0;
+  }
+  .sep-line { flex: 1; height: 1px; background: var(--border); }
+  .sep-label { font-size: 12px; color: var(--subtle); white-space: nowrap; font-style: italic; }
+
+  .obj-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: .6rem;
+  }
+  .obj-q {
+    padding: 1rem 1.25rem;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--bg2);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    transition: background .15s;
+    user-select: none;
+  }
+  .obj-q:hover { background: var(--bg3); }
+  .obj-chevron { color: var(--subtle); font-size: 11px; transition: transform .2s; flex-shrink: 0; }
+  .obj-q.open .obj-chevron { transform: rotate(180deg); }
+  .obj-a {
+    display: none;
+    padding: 1rem 1.25rem;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .obj-a.open { display: block; }
+
+  .profiles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+  }
+  @media (max-width: 600px) { .profiles-grid { grid-template-columns: 1fr; } }
+
+  .profile-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    background: var(--bg2);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 10px;
+    border-radius: 20px;
+    margin-bottom: .6rem;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+  .badge-coral { background: var(--coral-bg); color: var(--coral); }
+  .profile-name { font-size: 14px; font-weight: 600; margin-bottom: .3rem; }
+  .profile-signals { font-size: 12px; color: var(--subtle); margin-bottom: .75rem; line-height: 1.5; }
+  .profile-approach { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--subtle);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin: 2rem 0 1rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .pain-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: .75rem;
+    background: var(--bg2);
+    border-left: 3px solid transparent;
+  }
+  .pain-card.vol { border-left-color: var(--green); }
+  .pain-card.sais { border-left-color: var(--purple); }
+  .pain-card.conc { border-left-color: var(--amber); }
+  .pain-card.prix { border-left-color: var(--blue); }
+  .pain-card.dig { border-left-color: var(--coral); }
+  .pain-q { font-size: 14px; font-weight: 600; margin-bottom: .5rem; font-style: italic; color: var(--text); }
+  .pain-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: .75rem; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    color: var(--subtle);
+  }
+  .pill.hot { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+
+  .q-list { list-style: none; counter-reset: q; }
+  .q-list li {
+    counter-increment: q;
+    display: flex;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text);
+    padding: .75rem 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.6;
+    align-items: flex-start;
+  }
+  .q-list li:last-child { border-bottom: none; }
+  .q-list li::before {
+    content: counter(q);
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text);
+    padding: .75rem 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.6;
+    align-items: flex-start;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: 2rem; }
+  .kpi {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+  .kpi-val { font-size: 24px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .kpi-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .tip {
+    display: flex;
+    gap: 10px;
+    padding: .75rem 1rem;
+    border-radius: var(--radius);
+    background: var(--amber-bg);
+    border: 1px solid rgba(240,165,0,0.15);
+    margin-bottom: .6rem;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .tip-green {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+  }
+
+  .cmp-row { display: flex; gap: .5rem; margin-bottom: .5rem; }
+  .cmp-item {
+    flex: 1;
+    padding: .75rem 1rem;
+    border-radius: var(--radius);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .cmp-bad { background: rgba(240,106,80,0.08); border: 1px solid rgba(240,106,80,0.2); color: var(--muted); }
+  .cmp-good { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--muted); }
+  .cmp-label { font-size: 11px; font-weight: 600; margin-bottom: .3rem; }
+  .cmp-bad .cmp-label { color: var(--coral); }
+  .cmp-good .cmp-label { color: var(--green); }
+
+  .dont-card {
+    border: 1px solid rgba(240,106,80,0.2);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: .75rem;
+    background: var(--coral-bg);
+  }
+  .dont-title { font-size: 14px; font-weight: 600; margin-bottom: .4rem; color: var(--coral); }
+  .dont-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* Contact list */
+  .contact-table { width: 100%; border-collapse: collapse; }
+  .contact-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--subtle);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-family: 'DM Mono', monospace;
+    padding: .6rem .5rem;
+    border-bottom: 1px solid var(--border2);
+  }
+  .contact-table td {
+    padding: .75rem .5rem;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .contact-table tr:last-child td { border-bottom: none; }
+  .contact-phone { font-family: 'DM Mono', monospace; color: var(--text); font-size: 13px; white-space: nowrap; }
+  .contact-email { font-size: 12px; color: var(--subtle); word-break: break-all; }
+  .contact-status {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: var(--bg2);
+    color: var(--text);
+    cursor: pointer;
+    border: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+  .contact-status.status-appeler { background: var(--bg2); color: var(--muted); }
+  .contact-status.status-message { background: var(--blue-bg); color: var(--blue); border-color: rgba(37,99,235,0.25); }
+  .contact-status.status-interesse { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+  .contact-status.status-fiche { background: rgba(109,79,199,0.07); color: var(--purple); border-color: rgba(109,79,199,0.25); }
+  .contact-status.status-refus { background: var(--coral-bg); color: var(--coral); border-color: rgba(220,38,38,0.25); }
+  .contact-status.status-rappeler { background: var(--amber-bg); color: var(--amber); border-color: rgba(199,125,0,0.25); }
+  .contact-notes {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text);
+    resize: none;
+    height: 28px;
+    outline: none;
+  }
+  .contact-notes:focus { border-color: var(--green-border); }
+  .maps-link {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--blue);
+    text-decoration: none;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(37,99,235,0.2);
+    background: var(--blue-bg);
+    white-space: nowrap;
+  }
+  .maps-link:hover { background: rgba(37,99,235,0.15); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">renoradar.</div>
+  <div class="header-sub">Guide prospection — Artisans PAC, Pas-de-Calais (62)</div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="show('contacts', this)">Contacts</button>
+  <button class="nav-btn" onclick="show('script', this)">Script d'appel</button>
+  <button class="nav-btn" onclick="show('objections', this)">Objections</button>
+  <button class="nav-btn" onclick="show('profils', this)">Profils</button>
+  <button class="nav-btn" onclick="show('accroches', this)">Accroches</button>
+  <button class="nav-btn" onclick="show('discovery', this)">Discovery</button>
+  <button class="nav-btn" onclick="show('arguments', this)">Arguments</button>
+  <button class="nav-btn" onclick="show('prep', this)">Avant d'appeler</button>
+</div>
+
+<div class="content">
+
+  <!-- CONTACTS -->
+  <div id="panel-contacts" class="panel active">
+    <div class="tip tip-green">Artisans RGE specialistes pompe a chaleur dans le Pas-de-Calais (62). Source : API ADEME. Donnee cle a obtenir : specialite exacte + rayon d'intervention.</div>
+
+    <div class="section-label">Zone Saint-Omer / Boulonnais</div>
+    <table class="contact-table">
+      <tr><th>Entreprise</th><th>Tel</th><th>Ville</th><th>Maps</th><th>Statut</th><th>Notes</th></tr>
+      <tr>
+        <td><strong>TEC'CHAUFF</strong><br><span class="contact-email">tec.chauff62@gmail.com</span></td>
+        <td class="contact-phone">06 76 87 07 06</td>
+        <td>Saint-Omer</td>
+        <td><a href="https://www.google.com/maps/search/TEC+CHAUFF+Saint-Omer" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>EURL N BOUDRINGHIN</strong><br><span class="contact-email">secretariat.marcdubois@gmail.com</span></td>
+        <td class="contact-phone">03 21 98 23 24</td>
+        <td>Saint-Omer</td>
+        <td><a href="https://www.google.com/maps/search/BOUDRINGHIN+Saint-Omer" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>FLANDRES ARTOIS</strong><br><span class="contact-email">direction@flandresartois.fr</span></td>
+        <td class="contact-phone">03 21 38 04 22</td>
+        <td>Tatinghem</td>
+        <td><a href="https://www.google.com/maps/search/FLANDRES+ARTOIS+Tatinghem" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>VIEILLARD ENERGIE</strong><br><span class="contact-email">vieillard.contact@gmail.com</span></td>
+        <td class="contact-phone">03 21 35 09 89</td>
+        <td>Escalles</td>
+        <td><a href="https://www.google.com/maps/search/VIEILLARD+ENERGIE+Escalles" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>VANHAECKE</strong><br><span class="contact-email">emmanuel.vanhaecke@orange.fr</span></td>
+        <td class="contact-phone">03 21 35 04 91</td>
+        <td>Autingues</td>
+        <td><a href="https://www.google.com/maps/search/VANHAECKE+chauffage+Autingues" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>TEMPO</strong><br><span class="contact-email">stephane.blerard@free.fr</span></td>
+        <td class="contact-phone">03 21 35 69 50</td>
+        <td>Rodelinghem</td>
+        <td><a href="https://www.google.com/maps/search/TEMPO+chauffage+Rodelinghem" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>THIBAUT LAMBLIN</strong><br><span class="contact-email">thibaut.lamblin@gmail.com</span></td>
+        <td class="contact-phone">06 50 99 69 36</td>
+        <td>Boulogne-sur-Mer</td>
+        <td><a href="https://www.google.com/maps/search/THIBAUT+LAMBLIN+Boulogne-sur-Mer" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>VAN DE VOORDE</strong><br><span class="contact-email">charles.vandevoorde@wanadoo.fr</span></td>
+        <td class="contact-phone">03 91 90 30 54</td>
+        <td>Saint-Martin-Boulogne</td>
+        <td><a href="https://www.google.com/maps/search/VAN+DE+VOORDE+chauffage+Saint-Martin-Boulogne" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+    </table>
+
+    <div class="section-label">Zone Bethune / Lens</div>
+    <table class="contact-table">
+      <tr><th>Entreprise</th><th>Tel</th><th>Ville</th><th>Maps</th><th>Statut</th><th>Notes</th></tr>
+      <tr>
+        <td><strong>VEZILIER CHAUFFAGE</strong><br><span class="contact-email">vezilier.chauffage@gmail.com</span></td>
+        <td class="contact-phone">03 79 57 17 17</td>
+        <td>Vendin-les-Bethune</td>
+        <td><a href="https://www.google.com/maps/search/VEZILIER+CHAUFFAGE+Vendin-les-Bethune" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>VERIZO</strong><br><span class="contact-email">contact@verizo.fr</span></td>
+        <td class="contact-phone">06 23 93 29 25</td>
+        <td>Chocques</td>
+        <td><a href="https://www.google.com/maps/search/VERIZO+Chocques" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>VANDROTH</strong><br><span class="contact-email">sarl.vandroth@gmail.com</span></td>
+        <td class="contact-phone">03 21 65 16 77</td>
+        <td>Annequin</td>
+        <td><a href="https://www.google.com/maps/search/VANDROTH+Annequin" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>TSR SERVICES</strong><br><span class="contact-email">agence-lens@monchauffagiste.com</span></td>
+        <td class="contact-phone">03 76 08 05 30</td>
+        <td>Lievin</td>
+        <td><a href="https://www.google.com/maps/search/TSR+SERVICES+Lievin" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>WALIGORA GUILLAUME</strong><br><span class="contact-email">waligora.artisan@gmail.com</span></td>
+        <td class="contact-phone">06 66 49 31 59</td>
+        <td>Fampoux</td>
+        <td><a href="https://www.google.com/maps/search/WALIGORA+chauffage+Fampoux" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+      <tr>
+        <td><strong>TERNOIS CHAUFFAGE</strong><br><span class="contact-email">ternoischauffage@hotmail.fr</span></td>
+        <td class="contact-phone">06 25 21 69 39</td>
+        <td>Frevent</td>
+        <td><a href="https://www.google.com/maps/search/TERNOIS+CHAUFFAGE+Frevent" target="_blank" class="maps-link">Maps</a></td>
+        <td><select class="contact-status"><option>A appeler</option><option>Message</option><option>Interesse</option><option>Fiche envoyee</option><option>Refus</option><option>Rappeler</option></select></td>
+        <td><textarea class="contact-notes" placeholder="Notes..."></textarea></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- SCRIPT -->
+  <div id="panel-script" class="panel">
+
+    <div style="display:flex;align-items:center;gap:12px;padding:1rem 1.25rem;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);margin-bottom:1.5rem;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;">Entreprise</div>
+      <input id="company-input" type="text" placeholder="Colle ou tape le nom ici..." oninput="updateCompany(this.value)" style="flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);caret-color:var(--green);" />
+      <button onclick="document.getElementById('company-input').value='';updateCompany('');" style="font-size:11px;color:var(--subtle);background:transparent;border:none;cursor:pointer;padding:2px 6px;">&#10005;</button>
+    </div>
+
+    <div class="script-line">
+      <div class="tag open">Ouverture</div>
+      <div class="script-body">
+        <div class="script-text">"Bonjour, je suis bien chez <span class="hl company-name">[Entreprise]</span> ?"</div>
+        <div class="note">Premier oui. Attends la confirmation.</div>
+      </div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag anchor">Ancrage</div>
+      <div class="script-body">
+        <div class="script-text">"Bonjour, je m'appelle <span class="hl">Elliot</span>. Je vous appelle un peu de maniere spontanee. Je vous rassure tout de suite, j'ai rien a vous vendre."</div>
+        <div class="note">Pause. Laisse-le reagir.</div>
+      </div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag hook">Hook</div>
+      <div class="script-body">
+        <div class="script-text">"En fait, je fais de l'informatique et j'ai cree un outil qui detecte les passoires thermiques dans votre zone. J'ai identifie <span class="hl">plusieurs maisons classees F ou G, chauffees au fioul</span>, dans votre secteur. Et donc je sais que ce sont des proprietaires qui vont etre <span class="hl">obliges de renover d'ici 2028</span>."</div>
+        <div class="note">"Je fais de l'informatique" = credible et non menaçant. Pas besoin de donner un chiffre exact, "plusieurs" suffit.</div>
+      </div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag cta">Proposition</div>
+      <div class="script-body">
+        <div class="script-text">"J'ai rassemble toute une <span class="hl">fiche detaillee</span> avec les informations du bien : l'adresse, le diagnostic complet, le type de chauffage, et tout ce qui va avec. Et je voulais savoir si vous seriez interesse par ce genre de fiche. <span class="hl">Je peux vous en envoyer une gratuitement</span> pour que vous voyiez la qualite."</div>
+        <div class="note">UNE fiche, pas trois. Le "tout ce qui va avec" reste vague expres, ca laisse de la curiosite. Personnalise apres le call.</div>
+      </div>
+    </div>
+
+    <div class="separator">
+      <div class="sep-line"></div>
+      <div class="sep-label">s'il dit oui → qualifie avant d'envoyer</div>
+      <div class="sep-line"></div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag email">Qualification</div>
+      <div class="script-body">
+        <div class="script-text">"Pour que je vous envoie la fiche la plus pertinente — <span class="hl">vous faites quoi principalement</span> ? Pompe a chaleur, isolation, les deux ?"</div>
+        <div class="note">Note sa specialite. Ca determine quelle fiche tu envoies.</div>
+      </div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag offer">Zone</div>
+      <div class="script-body">
+        <div class="script-text">"Et <span class="hl">vous intervenez dans quel rayon</span> autour de [sa ville] ?"</div>
+        <div class="note">Note le rayon. Ca te donne sa zone pour filtrer les leads.</div>
+      </div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag" style="color:var(--green)">Capture</div>
+      <div class="script-body">
+        <div class="script-text">"C'est quoi <span class="hl">la meilleure adresse email</span> pour vous envoyer ca ?"</div>
+        <div class="note">Presuppose. Pas "vous avez un email ?" S'il dit par SMS : "OK je vous envoie le lien par SMS."</div>
+      </div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag offer">Teaser</div>
+      <div class="script-body">
+        <div class="script-text">"Je vous envoie ca dans la journee. Et sachez que dans votre zone, j'ai <span class="hl">[X] autres biens similaires</span> en base. La fiche que je vous envoie c'est un echantillon."</div>
+        <div class="note">Plante la graine. Il saura qu'il y en a plus.</div>
+      </div>
+    </div>
+
+    <div class="separator">
+      <div class="sep-line"></div>
+      <div class="sep-label">si refus ou "j'ai pas le temps" ou "j'ai assez de chantiers"</div>
+      <div class="sep-line"></div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag fallback">Reframe</div>
+      <div class="script-body">
+        <div class="script-text">"Je comprends. En fait, <span class="hl">je ne vous propose pas plus de chantiers. Je vous propose de choisir les meilleurs.</span> Les plus gros, les plus proches de chez vous, ceux ou le proprietaire est oblige de renover. Mais je comprends si c'est pas le moment."</div>
+        <div class="note">Repositionne sur la selection, pas le volume. Change la perception.</div>
+      </div>
+    </div>
+
+    <div class="script-line">
+      <div class="tag fallback">Sortie douce</div>
+      <div class="script-body">
+        <div class="script-text">"Ecoutez, je note votre contact. Le jour ou vous avez un creux ou vous voulez cibler un secteur precis, je vous envoie ce que j'ai. Ca vous va ?"</div>
+        <div class="note">Zero pression. Tu restes dans son repertoire.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OBJECTIONS -->
+  <div id="panel-objections" class="panel">
+    <div class="section-label">Cliquer pour voir la reponse</div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"J'ai deja assez de chantiers." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"C'est super, ca veut dire que vous etes bon. Mais est-ce que tous vos chantiers se valent ? L'idee c'est pas d'en avoir plus, c'est d'avoir le choix. Une maison de 400m2 chauffee au fioul avec une SCI qui doit renover avant 2028, c'est pas le meme chantier qu'un studio de 20m2. Je vous donne la possibilite de choisir les meilleurs."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"C'est combien ?" <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"Pour l'instant je vous offre la premiere fiche pour que vous jugiez la qualite. Apres, c'est un systeme de credits : quelques euros par fiche deverrouillee. Mais on verra ca apres votre test. L'idee c'est que vous voyiez d'abord si ca vous apporte des chantiers."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"Comment vous avez ces informations ?" <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"Ce sont les diagnostics de performance energetique. Chaque fois qu'un bien est vendu ou mis en location, un DPE est obligatoire. Ces diagnostics sont publies par l'ADEME en open data. Moi, je croise ca avec d'autres bases publiques pour identifier les proprietaires et calculer un score de priorite. Tout est legal et base sur des donnees officielles."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"Ca existe deja ce genre de truc." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"Vous pensez a quoi ? Les agences de leads type Leadstarter ? Eux vous vendent des contacts Google Ads a 50-80 euros, souvent partages avec d'autres artisans. Moi c'est different : je pars de la donnee du batiment. Vous savez avant d'appeler que c'est une maison de 120m2 chauffee au fioul avec une isolation insuffisante. C'est pas un formulaire rempli a la va-vite."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"Les proprietaires vont pas se laisser faire." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"C'est pas de la prospection agressive. La fiche que je vous donne inclut un argumentaire base sur les chiffres reels du logement : sa facture de chauffage, les aides auxquelles il a droit, la date butoir reglementaire. Vous arrivez comme un expert qui l'informe, pas comme un commercial qui derange. Ca change tout."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"Envoyez-moi un mail, je verrai." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"Bien sur. Pour que ce soit le plus pertinent possible — vous faites principalement de la PAC, de l'isolation, ou les deux ? Et vous intervenez dans quel rayon ? Comme ca je vous envoie une fiche qui correspond vraiment a votre activite."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"C'est quoi votre entreprise ?" <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"Je m'appelle Elliot. Je developpe RénoRadar, un outil qui detecte les passoires thermiques a partir des donnees publiques de l'ADEME. L'idee c'est simple : il y a 4,8 millions de passoires thermiques en France, et les proprietaires vont etre obliges de renover. Moi je vous aide a les trouver avant tout le monde."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"J'ai deja essaye des leads, c'etait nul." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"Je comprends. C'etait des leads partages ? Le probleme classique c'est que 5 artisans recoivent le meme contact et c'est la course au premier qui appelle. Ici c'est different sur deux points : d'abord la donnee vient du batiment, pas d'un formulaire. Et surtout, c'est vous qui choisissez quel bien vous interessse. Vous ne recevez pas un lead random — vous selectionnez un chantier precis."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"C'est pas garanti qu'ils veulent des travaux." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"C'est vrai, c'est pas du lead entrant. Mais un proprietaire d'un bien classe F chauffe au fioul avec 18 000 euros de facture par an et qui ne pourra plus louer en 2028, il a pas tellement le choix. Le DPE est la preuve qu'il y a un besoin. Apres c'est votre talent commercial qui fait le reste — et la fiche vous donne tous les arguments."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"Nous on repond qu'aux appels d'offres." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"D'accord, je comprends. Nous on cible les particuliers et les SCI, donc c'est un marche different. Par curiosite, c'est uniquement du marche public ou vous faites aussi du particulier de temps en temps ?" Si c'est 100% appels d'offres → c'est pas ta cible, passe au suivant poliment. Si c'est un mix → "Justement, pour la partie particulier, on peut vous apporter des chantiers que vous n'auriez pas trouves autrement."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"Je travaille qu'avec des courtiers en travaux." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"OK. Et vous etes satisfait de ce qu'ils vous apportent ? Parce que le courtier, il prend sa commission sur le chantier. Nous c'est different : on vous donne l'adresse, le type de chauffage, le proprietaire. Vous contactez directement, pas d'intermediaire, pas de commission sur le chantier. Sur un remplacement PAC a 15 000 euros, ca fait une sacree difference."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"J'ai deja mon reseau, ca marche bien." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"Tant mieux, c'est le signe que vous faites du bon boulot. La question c'est : est-ce que votre reseau vous donne le choix ? Parce que la, vous pouvez voir sur une carte toutes les maisons F/G dans votre rayon, filtrer par type de chauffage, par surface. C'est pas pour remplacer votre reseau, c'est pour completer. Les mois ou le bouche-a-oreille ralentit, vous avez un plan B."</div>
+    </div>
+
+    <div class="obj-card">
+      <div class="obj-q" onclick="toggleObj(this)">"J'ai trop de boulot en ce moment." <span class="obj-chevron">&#9660;</span></div>
+      <div class="obj-a">"C'est la meilleure periode pour preparer la suite justement. Quand ca ralentira — et ca arrive toujours — vous aurez deja vos chantiers identifies. Je vous envoie une fiche gratuite, vous la regardez quand vous avez 5 minutes, et on en reparle quand vous voulez. Ca vous va ?"</div>
+    </div>
+  </div>
+
+  <!-- PROFILS -->
+  <div id="panel-profils" class="panel">
+    <div class="section-label">Profils d'artisans que tu vas croiser</div>
+    <div class="profiles-grid">
+
+      <div class="profile-card">
+        <div class="badge badge-green">Cible ideale</div>
+        <div class="profile-name">L'installateur PAC solo</div>
+        <div class="profile-signals">06 · 1-3 personnes · certifie RGE · site web basique ou absent</div>
+        <div class="profile-approach">C'est ta cible n1. Il fait le terrain + le commercial. Il a pas le temps de prospecter. Propose la fiche gratuite direct, il dira oui. L'argument "choisir ses chantiers" resonne fort chez lui.</div>
+      </div>
+
+      <div class="profile-card">
+        <div class="badge badge-amber">A convaincre</div>
+        <div class="profile-name">L'entreprise de renovation globale</div>
+        <div class="profile-signals">5-15 personnes · multi-competences (PAC + isolation + menuiseries) · site web pro</div>
+        <div class="profile-approach">Il a deja des canaux mais veut grossir. Son angle c'est le volume et la zone. Parle-lui de l'exclusivite de zone : "Vous verrouillez votre secteur, vos concurrents n'y ont plus acces." Gros potentiel de passage en exclusif.</div>
+      </div>
+
+      <div class="profile-card">
+        <div class="badge badge-blue">Interessant</div>
+        <div class="profile-name">Le chauffagiste historique</div>
+        <div class="profile-signals">20+ ans · ex fioul/gaz qui s'est mis a la PAC · base de clients existante</div>
+        <div class="profile-approach">Il connait le terrain et ses clients, mais il a besoin de renouveler. Parle-lui des propriétaires au fioul : "Ce sont vos futurs clients, ils ont le meme type de chaudiere que celles que vous remplaciez avant." Ca resonne avec son metier.</div>
+      </div>
+
+      <div class="profile-card">
+        <div class="badge badge-coral">Difficile</div>
+        <div class="profile-name">La grosse boite / franchise</div>
+        <div class="profile-signals">Agence locale d'un reseau national · Engie, Effy, etc.</div>
+        <div class="profile-approach">Pas ta priorite. Ils ont leurs propres canaux. Mais si tu les as au tel, demande-leur combien ils paient leurs leads aujourd'hui. Ca te donne du market intelligence.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ACCROCHES -->
+  <div id="panel-accroches" class="panel">
+    <div class="tip">Adapte ton accroche en fonction de ce que tu reperes avant d'appeler (taille, anciennete, specialite).</div>
+
+    <div class="section-label">Questions a poser → ce que tu ecoutes</div>
+
+    <div class="pain-card vol">
+      <div class="pain-q">"Aujourd'hui, comment vous trouvez vos chantiers de renovation ?"</div>
+      <div class="pain-desc">S'il dit bouche-a-oreille → il est dependant et vulnerable. S'il dit Google Ads ou agence de leads → demande combien il paie et s'il est satisfait. Dans les deux cas, tu as un angle.</div>
+      <div class="pill-row">
+        <span class="pill hot">Canaux actuels</span>
+        <span class="pill hot">Prix par lead</span>
+        <span class="pill">Satisfaction</span>
+      </div>
+    </div>
+
+    <div class="pain-card conc">
+      <div class="pain-q">"Vous sentez une difference depuis l'interdiction des chaudieres fioul ?"</div>
+      <div class="pain-desc">Ca le met dans le contexte reglementaire. S'il dit "oui, on a plus de demandes" → il valide le marche. S'il dit "pas vraiment" → tu lui montres les chiffres de sa zone : "Pourtant il y a 1 500 maisons au fioul classees F/G dans un rayon de 40km autour de chez vous."</div>
+      <div class="pill-row">
+        <span class="pill hot">Contexte reglementaire</span>
+        <span class="pill hot">Opportunite fioul</span>
+        <span class="pill">Conscience du marche</span>
+      </div>
+    </div>
+
+    <div class="pain-card prix">
+      <div class="pain-q">"Vous faites de la prospection active ou vous attendez que les clients viennent ?"</div>
+      <div class="pain-desc">La plupart attendent. C'est ton ouverture : tu leur donnes un outil pour aller chercher les bons clients au lieu de subir.</div>
+      <div class="pill-row">
+        <span class="pill hot">Passif vs actif</span>
+        <span class="pill">Prospection existante</span>
+      </div>
+    </div>
+
+    <div class="pain-card dig">
+      <div class="pain-q">"Si vous pouviez choisir votre chantier ideal, ca ressemblerait a quoi ?"</div>
+      <div class="pain-desc">Question ouverte puissante. S'il dit "une grosse maison", "du fioul a remplacer", "un client qui a les moyens" — tu decris exactement ce que ta fiche lui donne. Repete ses mots.</div>
+      <div class="pill-row">
+        <span class="pill hot">Chantier ideal</span>
+        <span class="pill">Ses criteres</span>
+      </div>
+    </div>
+
+    <div class="pain-card sais">
+      <div class="pain-q">"Il y a des periodes ou c'est plus calme pour vous ?"</div>
+      <div class="pain-desc">Meme les artisans debordes ont des creux. Quand il l'admet, tu as ton angle : "C'est exactement la que les fiches sont utiles — vous anticipez au lieu de subir."</div>
+      <div class="pill-row">
+        <span class="pill hot">Saisonnalite</span>
+        <span class="pill">Periodes creuses</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCOVERY -->
+  <div id="panel-discovery" class="panel">
+    <div class="tip tip-green">L'objectif c'est de noter 4 choses : specialite, rayon d'intervention, email, et s'il est chaud ou tiede.</div>
+    <div class="section-label">Infos a obtenir pendant l'appel</div>
+    <ol class="q-list">
+      <li><strong>Specialite :</strong> Vous faites quoi principalement ? PAC, isolation, menuiseries, renovation globale ?</li>
+      <li><strong>Zone :</strong> Vous intervenez dans quel rayon autour de [sa ville] ?</li>
+      <li><strong>Preferences :</strong> Quel type de chantier vous interesse le plus ? (fioul, gaz, electrique / maison, copro)</li>
+      <li><strong>Canaux actuels :</strong> Aujourd'hui vos clients vous trouvent comment ?</li>
+      <li><strong>Experience leads :</strong> Vous avez deja utilise des plateformes de leads ? C'etait bien ?</li>
+      <li><strong>Prix acceptable :</strong> Combien vous mettez aujourd'hui pour trouver un chantier ?</li>
+      <li><strong>Contact :</strong> C'est quoi la meilleure adresse email pour recevoir la fiche ?</li>
+      <li><strong>Volume :</strong> Combien de chantiers supplementaires par mois ca vous interesserait ?</li>
+    </ol>
+  </div>
+
+  <!-- ARGUMENTS -->
+  <div id="panel-arguments" class="panel">
+    <div class="section-label">Les 3 arguments cles</div>
+
+    <div style="border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:.75rem;background:var(--bg2);border-left:3px solid var(--green);">
+      <div style="font-size:15px;font-weight:600;margin-bottom:.5rem;font-style:italic;">"Vous choisissez vos chantiers au lieu de les subir."</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">Vous voyez la carte de votre zone, les biens classes F/G, le type de chauffage, la surface. Vous debloquez uniquement ceux qui vous interessent. Une maison de 150m2 au fioul a 12km de chez vous, c'est un chantier que vous choisissez en connaissance de cause.</div>
+    </div>
+
+    <div style="border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:.75rem;background:var(--bg2);border-left:3px solid var(--amber);">
+      <div style="font-size:15px;font-weight:600;margin-bottom:.5rem;font-style:italic;">"Le proprietaire est oblige de renover. C'est la loi."</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">Les logements classes G ne peuvent plus etre loues depuis 2025. Les F, c'est 2028. Un proprietaire d'un bien F chauffe au fioul qui loue, il n'a pas le choix : il doit faire des travaux. Vous arrivez avec la solution au bon moment.</div>
+    </div>
+
+    <div style="border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:.75rem;background:var(--bg2);border-left:3px solid var(--blue);">
+      <div style="font-size:15px;font-weight:600;margin-bottom:.5rem;font-style:italic;">"On vous donne l'argumentaire. Vous avez juste a appeler."</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;">Chaque fiche inclut les chiffres du logement, le cout annuel de chauffage, les aides disponibles, et meme un texte d'accroche pour contacter le proprietaire. Vous arrivez pas les mains vides — vous arrivez en expert.</div>
+    </div>
+
+    <div class="section-label">Ce qu'il ne faut PAS dire</div>
+
+    <div class="dont-card">
+      <div class="dont-title">Ne jamais dire "lead"</div>
+      <div class="dont-desc">Les artisans ne connaissent pas ce mot ou l'associent a des arnaques. Dis "fiche", "prospect", "chantier", "bien identifie".</div>
+    </div>
+
+    <div class="dont-card">
+      <div class="dont-title">Ne jamais parler de prix en premier</div>
+      <div class="dont-desc">La fiche gratuite vient d'abord. Le prix vient apres qu'il ait vu la qualite. S'il demande : "C'est quelques euros par fiche, mais testez d'abord gratuitement."</div>
+    </div>
+
+    <div class="dont-card">
+      <div class="dont-title">Ne jamais denigrer les agences de leads</div>
+      <div class="dont-desc">Dis "c'est different". Pas "c'est mieux". Laisse-le conclure lui-meme. "Eux c'est du Google Ads partage. Nous c'est de la donnee batiment individualisee."</div>
+    </div>
+
+    <div class="dont-card">
+      <div class="dont-title">Ne jamais promettre de resultats</div>
+      <div class="dont-desc">Dis "les donnees sont basees sur les DPE officiels de l'ADEME". Ne dis pas "ca va vous apporter 10 chantiers par mois". L'artisan detecte le bullshit instantanement.</div>
+    </div>
+
+    <div class="section-label">Comparaison de formulations</div>
+    <div class="cmp-row">
+      <div class="cmp-item cmp-bad"><div class="cmp-label">Eviter</div>"Je vends des leads renovation"</div>
+      <div class="cmp-item cmp-good"><div class="cmp-label">Dire</div>"Je detecte les passoires thermiques dans votre zone"</div>
+    </div>
+    <div class="cmp-row">
+      <div class="cmp-item cmp-bad"><div class="cmp-label">Eviter</div>"Vous voulez plus de clients ?"</div>
+      <div class="cmp-item cmp-good"><div class="cmp-label">Dire</div>"Vous aimeriez choisir vos chantiers ?"</div>
+    </div>
+    <div class="cmp-row">
+      <div class="cmp-item cmp-bad"><div class="cmp-label">Eviter</div>"C'est de l'open data ADEME"</div>
+      <div class="cmp-item cmp-good"><div class="cmp-label">Dire</div>"C'est base sur les diagnostics energetiques officiels"</div>
+    </div>
+    <div class="cmp-row">
+      <div class="cmp-item cmp-bad"><div class="cmp-label">Eviter</div>"Mon algorithme de scoring..."</div>
+      <div class="cmp-item cmp-good"><div class="cmp-label">Dire</div>"On identifie les biens les plus urgents a renover"</div>
+    </div>
+  </div>
+
+  <!-- PREP -->
+  <div id="panel-prep" class="panel">
+    <div class="section-label">Objectifs sur les 14 appels</div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-val">~50%</div><div class="kpi-label">Decrochent</div></div>
+      <div class="kpi"><div class="kpi-val">~25%</div><div class="kpi-label">Interesses</div></div>
+      <div class="kpi"><div class="kpi-val">3-5</div><div class="kpi-label">Veulent la fiche gratuite</div></div>
+    </div>
+
+    <div class="section-label">Avant chaque appel — 1 minute de prep</div>
+    <ul class="checklist">
+      <li><span class="check">&#10003;</span>Verifier son nom + ville dans la liste contacts</li>
+      <li><span class="check">&#10003;</span>Regarder rapidement sur Google Maps : taille, avis, anciennete</li>
+      <li><span class="check">&#10003;</span>Numero en 06 = patron solo (cible ideale). Standard 03 = structure, demander le gerant</li>
+      <li><span class="check">&#10003;</span>Avoir la fiche HTML Bapaume prete a envoyer (personnaliser le bandeau apres le call)</li>
+      <li><span class="check">&#10003;</span>Avoir en tete le chiffre cle : "1 500 maisons F/G au fioul dans le 62"</li>
+    </ul>
+
+    <div class="section-label">Creneaux d'appel</div>
+    <div class="tip">Les 06 (portables) : samedi matin 8h30-11h ou mardi-mercredi 8h-9h. Les 03 (fixes) : lundi-mardi 8h-9h30 ou 17h-18h30. Les artisans sont sur les chantiers en journee.</div>
+
+    <div class="section-label">Apres le call — noter dans la liste Contacts</div>
+    <ul class="checklist">
+      <li><span class="check">&#10003;</span>Statut : interesse / fiche envoyee / refus / rappeler</li>
+      <li><span class="check">&#10003;</span>Sa specialite exacte (PAC seul, PAC + isolation, etc.)</li>
+      <li><span class="check">&#10003;</span>Son rayon d'intervention</li>
+      <li><span class="check">&#10003;</span>Son email ou numero pour envoi</li>
+      <li><span class="check">&#10003;</span>Ses objections / remarques (or pour ameliorer le produit)</li>
+    </ul>
+
+    <div class="section-label">Apres envoi de la fiche — follow-up J+3</div>
+    <ul class="checklist">
+      <li><span class="check">&#10003;</span>Rappeler 3 jours apres : "Vous avez eu le temps de regarder la fiche ?"</li>
+      <li><span class="check">&#10003;</span>Si oui : "Qu'est-ce que vous en avez pense ? C'est le genre d'info utile pour vous ?"</li>
+      <li><span class="check">&#10003;</span>Si positif : "J'en ai [X] autres dans votre zone. Vous voulez que je vous ouvre un acces ?"</li>
+      <li><span class="check">&#10003;</span>Noter TOUT ce qu'il dit — chaque feedback ameliore le produit</li>
+    </ul>
+
+    <div class="section-label">Seuil de validation</div>
+    <div class="tip tip-green">Si 3 artisans sur 14 disent "envoyez-moi la fiche" et que 1-2 rappellent positivement apres → c'est valide, on build la plateforme. Si 0-1 interesse → revoir l'angle ou le pitch avant de continuer.</div>
+  </div>
+
+</div>
+
+<script>
+function updateCompany(val) {
+  const display = val.trim() || '[Entreprise]';
+  document.querySelectorAll('.company-name').forEach(el => el.textContent = display);
+}
+
+function show(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleObj(el) {
+  const answer = el.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  document.querySelectorAll('.obj-a').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.obj-q').forEach(q => q.classList.remove('open'));
+  if (!isOpen) {
+    answer.classList.add('open');
+    el.classList.add('open');
+  }
+}
+
+// ─── Persistance localStorage ───────────────────────
+const STORAGE_KEY = 'renoradar_contacts';
+
+function getContactId(row) {
+  const name = row.querySelector('td strong');
+  return name ? name.textContent.trim() : null;
+}
+
+function loadSavedData() {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  document.querySelectorAll('.contact-table tr').forEach(row => {
+    const id = getContactId(row);
+    if (!id || !saved[id]) return;
+
+    const select = row.querySelector('.contact-status');
+    const textarea = row.querySelector('.contact-notes');
+
+    if (select && saved[id].status) {
+      select.value = saved[id].status;
+    }
+    if (textarea && saved[id].notes) {
+      textarea.value = saved[id].notes;
+    }
+  });
+}
+
+function saveContactData(id, field, value) {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  if (!saved[id]) saved[id] = {};
+  saved[id][field] = value;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+}
+
+function applyStatusColor(select) {
+  select.classList.remove('status-appeler','status-message','status-interesse','status-fiche','status-refus','status-rappeler');
+  const val = select.value;
+  if (val === 'A appeler') select.classList.add('status-appeler');
+  else if (val === 'Message') select.classList.add('status-message');
+  else if (val === 'Interesse') select.classList.add('status-interesse');
+  else if (val === 'Fiche envoyee') select.classList.add('status-fiche');
+  else if (val === 'Refus') select.classList.add('status-refus');
+  else if (val === 'Rappeler') select.classList.add('status-rappeler');
+}
+
+function initPersistence() {
+  document.querySelectorAll('.contact-table tr').forEach(row => {
+    const id = getContactId(row);
+    if (!id) return;
+
+    const select = row.querySelector('.contact-status');
+    const textarea = row.querySelector('.contact-notes');
+
+    if (select) {
+      applyStatusColor(select);
+      select.addEventListener('change', () => {
+        saveContactData(id, 'status', select.value);
+        applyStatusColor(select);
+      });
+    }
+    if (textarea) {
+      textarea.addEventListener('input', () => saveContactData(id, 'notes', textarea.value));
+    }
+  });
+
+  loadSavedData();
+
+  // Appliquer les couleurs après le chargement des données sauvegardées
+  document.querySelectorAll('.contact-status').forEach(applyStatusColor);
+}
+
+initPersistence();
+</script>
+
+</body>
+</html>

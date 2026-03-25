@@ -1,0 +1,31 @@
+adresse,dpe,isolation_murs,isolation_menuiseries,isolation_plancher,isolation_enveloppe,cout_annuel,surface_m2,conso_kwh_m2,date_dpe,commune,code_postal,annee_construction
+"105 Route de Watten 62910 Serques",E,bonne,moyenne,insuffisante,bonne,2863,90,223,2026-03-10,Serques,62910,
+"22 Rue d'Enguinegatte 62120 Mametz",E,bonne,moyenne,moyenne,moyenne,3272,95,239,2026-03-03,Mametz,62120,1913
+"1199 Rue Goudenove 62610 Brêmes",E,très bonne,moyenne,insuffisante,bonne,4214,152,194,2026-02-27,Brêmes,62610,
+"2 Rue de la Biette 62690 Izel-lès-Hameau",E,bonne,moyenne,insuffisante,moyenne,2456,82,243,2026-02-21,Izel-lès-Hameau,62690,
+"192 Rue du Marais 62130 Gauchin-Verloingt",E,bonne,moyenne,bonne,insuffisante,3034,92,230,2026-02-19,Gauchin-Verloingt,62130,
+"33 Rue du Loquin 62560 Thiembronne",E,bonne,bonne,insuffisante,moyenne,4242,124,274,2026-02-05,Thiembronne,62560,
+"10 Rue des Noyers 62450 Bapaume",E,bonne,bonne,insuffisante,bonne,2618,83,207,2026-02-02,Bapaume,62450,1983
+"4591 Route d'Audruicq 62370 Saint-Folquin",E,bonne,très bonne,insuffisante,bonne,2717,80,236,2026-01-22,Saint-Folquin,62370,
+"113 Route des Attaques 62370 Guemps",E,très bonne,bonne,insuffisante,bonne,2877,99,193,2025-12-18,Guemps,62370,
+"14 Rue de Conteville 62130 Saint-Pol-sur-Ternoise",E,bonne,très bonne,insuffisante,moyenne,2960,88,228,2025-12-15,Saint-Pol-sur-Ternoise,62130,
+"45 Rue Principale 62140 Cavron-Saint-Martin",E,bonne,bonne,insuffisante,moyenne,2692,93,246,2025-12-10,Cavron-Saint-Martin,62140,
+"52 Rue du Marais 62310 Fruges",E,bonne,bonne,insuffisante,insuffisante,4437,132,233,2025-10-02,Fruges,62310,
+"42 Rue de Neuvillette 62870 Campagne-lès-Hesdin",E,bonne,très bonne,insuffisante,bonne,3287,105,253,2025-09-26,Campagne-lès-Hesdin,62870,
+"4 Rue du Parquet Gambette 62770 Auchy-lès-Hesdin",F,bonne,bonne,insuffisante,moyenne,4018,116,233,2025-09-11,Auchy-lès-Hesdin,62770,
+"5 Rue de Sailly 62156 Boiry-Notre-Dame",E,bonne,bonne,insuffisante,bonne,2939,95,215,2025-07-30,Boiry-Notre-Dame,62156,
+"1 Rue de la Place 62810 Sombrin",F,bonne,bonne,insuffisante,moyenne,4533,115,263,2025-07-30,Sombrin,62810,
+"42 Rue de Buneville 62127 Ternas",E,bonne,moyenne,insuffisante,insuffisante,4178,136,278,2025-07-24,Ternas,62127,
+"82 Rue du Crocq 62650 Bourthes",E,bonne,moyenne,insuffisante,bonne,7325,249,204,2025-06-30,Bourthes,62650,
+"43 Rue Principale 62560 Avroult",E,très bonne,bonne,moyenne,insuffisante,3810,131,203,2025-05-16,Avroult,62560,1963
+"6 Rue des Waranges 62560 Fauquembergues",E,bonne,insuffisante,insuffisante,très bonne,2330,90,173,2025-05-05,Fauquembergues,62560,
+"47 Rue Principale 62270 Rebreuviette",E,bonne,bonne,insuffisante,moyenne,3103,99,268,2025-04-28,Rebreuviette,62270,
+"1 Rue du 19 Mars 1962 62130 La Thieuloye",E,bonne,moyenne,insuffisante,insuffisante,4218,152,195,2025-04-25,La Thieuloye,62130,1985
+"4 Chemin de Fruges 62310 Créquy",E,bonne,très bonne,insuffisante,bonne,2539,88,198,2025-04-03,Créquy,62310,
+"34 Rue Principale 62380 Dohem",E,bonne,bonne,moyenne,insuffisante,3981,121,228,2025-03-25,Dohem,62380,1980
+"2ter Rue de Monteville 62310 Coupelle-Vieille",E,bonne,bonne,insuffisante,bonne,3524,130,180,2025-03-20,Coupelle-Vieille,62310,
+"6 Rue des Clématites 62000 Dainville",E,bonne,bonne,bonne,bonne,2843,97,195,2025-03-05,Dainville,62000,1970
+"Route de Longvilliers 62630 Frencq",E,bonne,moyenne,bonne,insuffisante,3804,104,309,2025-02-11,Frencq,62630,1990
+"3 Grand Rue 62870 Saint-Rémy-au-Bois",E,bonne,moyenne,insuffisante,insuffisante,5624,154,308,2025-02-06,Saint-Rémy-au-Bois,62870,
+"63 Rue Principale 62310 Torcy",E,bonne,insuffisante,insuffisante,moyenne,3167,105,271,2025-01-30,Torcy,62310,
+"87 Rue du Loquin 62560 Thiembronne",E,bonne,moyenne,insuffisante,bonne,2869,91,210,2025-01-22,Thiembronne,62560,

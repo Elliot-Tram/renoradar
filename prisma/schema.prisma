@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ──────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Utilisateurs ──────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  company       String?
+  siret         String?
+  rgeNumber     String?
+
+  speciality Speciality?
+  department String?
+
+  plan              Plan     @default(DECOUVERTE)
+  credits           Int      @default(3) // crédits restants (3 offerts)
+  fichesUsedThisMonth Int    @default(0)
+  fichesMonthReset  DateTime @default(now()) // début du mois en cours
+  stripeCustomerId  String?
+  stripeSubId       String?
+
+  accounts  Account[]
+  sessions  Session[]
+  unlocks   Unlock[]
+  courriers Courrier[]
+  zone      ZoneExclusive?
+  purchases CreditPurchase[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Plan {
+  DECOUVERTE    // 3 fiches one-shot
+  ARTISAN       // 30 fiches/mois, J+7
+  ARTISAN_PRO   // illimité, J+0, semi-exclu
+  EXCLUSIF      // illimité, J+0, exclu
+}
+
+enum Speciality {
+  PAC           // Pompe à chaleur
+  ISOLATION     // Isolation thermique
+  MENUISERIE    // Fenêtres, portes
+  CHAUDIERE     // Chaudière gaz condensation
+  SOLAIRE       // Panneaux solaires / chauffe-eau
+  VENTILATION   // VMC double flux
+}
+
+// ─── Prospects (DPE enrichis) ──────────────────────
+
+model Prospect {
+  id        String @id @default(cuid())
+
+  // Localisation
+  address       String
+  city          String
+  postalCode    String
+  department    String
+  latitude      Float
+  longitude     Float
+  parcelleId    String?
+
+  // DPE
+  etiquetteDpe      String   // F, G
+  consommationEnergie Float? // kWh/m²/an
+  emissionGes       Float?   // kgCO2/m²/an
+  dateEtablissementDpe DateTime
+  numeroDpe         String?  @unique
+
+  // Bâtiment
+  typeBatiment      String   // maison, appartement, immeuble
+  surfaceHabitable  Float
+  anneeConstruction Int?
+  nbNiveaux         Int?
+
+  // Chauffage
+  typeEnergieChauffage     String  // Fioul, Gaz, Electricité...
+  typeInstallationChauffage String?
+  typeEnergieChauffageAppoint String?
+
+  // Isolation
+  isolationMurs         String?
+  isolationToiture      String?
+  isolationPlancher     String?
+  typeVitrage           String?
+
+  // Eau chaude
+  typeEnergieEcs        String?
+
+  // Propriétaire
+  proprietaireType      String?  // particulier, sci, copro
+  proprietaireNom       String?
+  proprietaireSiren     String?
+  dirigeantNom          String?
+  dirigeantEmail        String?
+
+  // DVF
+  dernierPrixVente      Int?
+  dateDerniereVente     DateTime?
+
+  // Score
+  score     Int @default(0) // 0-100
+
+  unlocks   Unlock[]
+  courriers Courrier[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([department, etiquetteDpe])
+  @@index([department, typeEnergieChauffage])
+  @@index([score(sort: Desc)])
+}
+
+// ─── Déblocages ────────────────────────────────────
+
+model Unlock {
+  id         String   @id @default(cuid())
+  userId     String
+  prospectId String
+  user     User     @relation(fields: [userId], references: [id])
+  prospect Prospect @relation(fields: [prospectId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, prospectId])
+}
+
+// ─── Courriers (Manuscry) ──────────────────────────
+
+model Courrier {
+  id         String @id @default(cuid())
+  userId     String
+  prospectId String
+  manuscryId String? // ID retourné par Manuscry
+  status     CourrierStatus @default(PENDING)
+  template   String?
+
+  user     User     @relation(fields: [userId], references: [id])
+  prospect Prospect @relation(fields: [prospectId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CourrierStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ─── Achats de crédits ───────────────────────────────
+
+model CreditPurchase {
+  id               String @id @default(cuid())
+  userId           String
+  amount           Int    // nombre de crédits achetés
+  amountPaidCents  Int    // montant payé en centimes
+  stripeSessionId  String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// ─── Zones exclusives ──────────────────────────────
+
+model ZoneExclusive {
+  id         String     @id @default(cuid())
+  userId     String     @unique
+  department String
+  speciality Speciality
+  priceCents Int        // prix mensuel
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([department, speciality, userId])
+}

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RénoRadar — 21 Rue de Douai, Bapaume</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+  :root {
+    --accent: #C8F23D;
+    --accent-dark: #9EC22A;
+    --black: #1A1A1A;
+    --dark: #2D2D2D;
+    --gray-900: #333333;
+    --gray-600: #6B6B6B;
+    --gray-400: #999999;
+    --gray-200: #E0E0E0;
+    --gray-100: #F0F0F0;
+    --gray-50: #F7F7F7;
+    --white: #FFFFFF;
+    --red: #E53E3E;
+    --red-light: #FFF5F5;
+    --red-border: #FED7D7;
+    --green: #38A169;
+    --green-light: #F0FFF4;
+    --green-border: #C6F6D5;
+    --orange: #DD6B20;
+    --orange-light: #FFFAF0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    color: var(--black);
+    background: var(--gray-50);
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @page { size: A4; margin: 0; }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 32px 40px;
+    background: var(--white);
+  }
+
+  @media print {
+    body { background: var(--white); }
+    .page { padding: 20px 28px; min-height: auto; }
+    .section { break-inside: avoid; page-break-inside: avoid; }
+    .owner-card { break-inside: avoid; page-break-inside: avoid; }
+    .objections-wrap { break-inside: avoid; page-break-inside: avoid; }
+    .accroche-box { break-inside: avoid; page-break-inside: avoid; }
+    .property-card { break-inside: avoid; page-break-inside: avoid; }
+    .key-points { break-inside: avoid; page-break-inside: avoid; }
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--gray-100);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .brand-text {}
+
+  .brand-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .brand-sub {
+    font-size: 12px;
+    color: var(--gray-600);
+    font-weight: 400;
+  }
+
+  .score-badge {
+    text-align: right;
+  }
+
+  .score-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .score-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--black);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .score-max {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    color: var(--gray-400);
+    font-weight: 600;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .score-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--black);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 4px;
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    margin-bottom: 18px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--black);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 3px solid var(--accent);
+    display: inline-block;
+  }
+
+  .section-title-wrap {
+    margin-bottom: 10px;
+  }
+
+  /* ── PROPERTY ── */
+  .property-card {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid var(--gray-200);
+  }
+
+  .property-address {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.5px;
+    margin-bottom: 2px;
+  }
+
+  .property-city {
+    font-size: 15px;
+    color: var(--gray-600);
+    margin-bottom: 16px;
+  }
+
+  .property-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 6px;
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    color: var(--gray-900);
+  }
+
+  /* ── DPE ── */
+  .dpe-row {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .dpe-letter {
+    font-family: 'Space Grotesk', sans-serif;
+    width: 64px;
+    min-height: 64px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--white);
+    flex-shrink: 0;
+    align-self: stretch;
+  }
+
+  .dpe-F { background: var(--orange); }
+  .dpe-G { background: var(--red); }
+
+  .dpe-details { flex: 1; }
+
+  /* ── GRIDS ── */
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+  .stat-card {
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--black);
+    letter-spacing: -0.5px;
+  }
+
+  .stat-value.danger { color: var(--red); }
+  .stat-value.warning { color: var(--orange); }
+  .stat-value.success { color: var(--green); }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 500;
+  }
+
+  /* ── ISOLATION ── */
+  .isolation-item {
+    text-align: center;
+    padding: 10px 8px;
+    border-radius: 10px;
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+  }
+
+  .isolation-label {
+    font-size: 12px;
+    color: var(--gray-600);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .isolation-status {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .status-bad { color: var(--red); }
+  .status-ok { color: var(--orange); }
+  .status-good { color: var(--green); }
+
+  /* ── OWNER ── */
+  .owner-card {
+    background: var(--white);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px 20px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .owner-type {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .owner-name {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--black);
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+
+  .owner-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+    margin-bottom: 14px;
+  }
+
+  .owner-detail {
+    font-size: 14px;
+    color: var(--gray-900);
+  }
+
+  .owner-detail strong {
+    color: var(--gray-400);
+    font-weight: 600;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 1px;
+  }
+
+  .owner-alert {
+    padding: 12px 16px;
+    background: var(--red-light);
+    border: 1px solid var(--red-border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--red);
+    line-height: 1.4;
+  }
+
+  /* ── TRAVAUX ── */
+  .travaux-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+
+  .travaux-num {
+    font-family: 'Space Grotesk', sans-serif;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--black);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .travaux-num.p2 { background: var(--gray-900); }
+  .travaux-num.p3 { background: var(--gray-600); }
+
+  .travaux-desc {
+    font-size: 14px;
+    color: var(--black);
+    flex: 1;
+  }
+
+  .travaux-desc span {
+    color: var(--gray-600);
+    font-weight: 400;
+  }
+
+  .travaux-impact {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green);
+    background: var(--green-light);
+    border: 1px solid var(--green-border);
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+
+  /* ── ARGUMENTS ── */
+  .key-points {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .key-point {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+  }
+
+  .key-point-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .kpi-urgent { background: var(--red-light); color: var(--red); border: 1px solid var(--red-border); }
+  .kpi-money { background: #FFFFF0; color: var(--black); border: 1px solid #FEFCBF; }
+  .kpi-eco { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+  .kpi-value { background: #EBF8FF; color: #2B6CB0; border: 1px solid #BEE3F8; }
+
+  .key-point-text {
+    font-size: 13px;
+    color: var(--gray-600);
+    line-height: 1.4;
+  }
+
+  .key-point-text strong {
+    color: var(--black);
+    font-weight: 700;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* ── ACCROCHE ── */
+  .accroche-box {
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 22px 24px;
+    border-left: 4px solid var(--accent);
+  }
+
+  .accroche-text {
+    font-size: 14px;
+    color: var(--gray-900);
+    line-height: 1.7;
+  }
+
+  /* ── OBJECTIONS ── */
+  .objections-wrap {
+    background: var(--gray-50);
+    border-radius: 12px;
+    padding: 18px 22px;
+    border: 1.5px solid var(--gray-200);
+  }
+
+  .objection {
+    display: flex;
+    gap: 20px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-200);
+    align-items: baseline;
+  }
+
+  .objection:last-child { border-bottom: none; padding-bottom: 0; }
+  .objection:first-child { padding-top: 0; }
+
+  .objection-q {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--red);
+    min-width: 150px;
+  }
+
+  .objection-a {
+    font-size: 14px;
+    color: var(--gray-900);
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 2px solid var(--gray-100);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--gray-600);
+    font-size: 11px;
+  }
+
+  /* ── PREPARED FOR ── */
+  .prepared-for {
+    background: var(--black);
+    color: var(--white);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .prepared-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .prepared-label {
+    font-size: 11px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+
+  .prepared-company {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .prepared-meta {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  .prepared-right {
+    text-align: right;
+  }
+
+  .prepared-zone {
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  .prepared-specialty {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  /* ── YOUR SPECIALTY TAG ── */
+  .tag-specialty {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--black);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+
+  /* ── CTA BANNER ── */
+  .cta-banner {
+    background: var(--gray-50);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: center;
+    margin-top: 20px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .cta-count {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--black);
+    line-height: 1;
+  }
+
+  .cta-count em {
+    color: var(--accent-dark);
+    font-style: normal;
+  }
+
+  .cta-text {
+    font-size: 15px;
+    color: var(--gray-600);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .cta-text strong {
+    color: var(--black);
+  }
+
+  .cta-contact {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--gray-400);
+  }
+
+  .cta-contact a {
+    color: var(--black);
+    font-weight: 700;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="header">
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Radar probe icon: concentric arcs opening top-right with center dot -->
+        <circle cx="24" cy="24" r="20" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-dasharray="95 32"/>
+        <circle cx="24" cy="24" r="14" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-dasharray="66 22"/>
+        <circle cx="24" cy="24" r="8" stroke="#1A1A1A" stroke-width="2.5" fill="none" stroke-dasharray="38 13"/>
+        <circle cx="24" cy="24" r="3" fill="#1A1A1A"/>
+        <!-- Radar sweep line -->
+        <line x1="24" y1="24" x2="38" y2="10" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">
+        <div class="brand-name">RénoRadar</div>
+        <div class="brand-sub">Détectez les passoires thermiques près de chez vous</div>
+      </div>
+    </div>
+    <div class="score-badge">
+      <div class="score-label">Score lead</div>
+      <div class="score-row">
+        <div class="score-value">92</div>
+        <div class="score-max">/100</div>
+      </div>
+      <div class="score-tag">Prioritaire</div>
+    </div>
+  </div>
+
+  <!-- ═══ PRÉPARÉ POUR ═══ -->
+  <div class="prepared-for">
+    <div class="prepared-left">
+      <div>
+        <div class="prepared-label">Fiche préparée pour</div>
+        <div class="prepared-company">TEC'CHAUFF</div>
+        <div class="prepared-meta">Spécialiste pompe à chaleur — Saint-Omer (62)</div>
+      </div>
+    </div>
+    <div class="prepared-right">
+      <div class="prepared-zone">Zone d'intervention</div>
+      <div class="prepared-specialty">30 km autour de Saint-Omer</div>
+    </div>
+  </div>
+
+  <!-- ═══ BIEN ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Bien identifié</div></div>
+    <div class="property-card">
+      <div class="property-address">21 Rue de Douai</div>
+      <div class="property-city">62450 Bapaume — Pas-de-Calais</div>
+      <div class="property-tags">
+        <span class="tag">Maison individuelle</span>
+        <span class="tag">475 m²</span>
+        <span class="tag">Zone H1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DPE ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Performance énergétique</div></div>
+    <div class="dpe-row">
+      <div class="dpe-letter dpe-F">F</div>
+      <div class="dpe-details">
+        <div class="grid-3">
+          <div class="stat-card">
+            <div class="stat-label">Consommation</div>
+            <div class="stat-value warning">262</div>
+            <div class="stat-sub">kWh/m²/an</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Facture annuelle</div>
+            <div class="stat-value danger">18 110 €</div>
+            <div class="stat-sub">par an</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Chauffage</div>
+            <div class="stat-value">Fioul</div>
+            <div class="stat-sub">domestique</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ISOLATION ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">État de l'isolation</div></div>
+    <div class="grid-4">
+      <div class="isolation-item">
+        <div class="isolation-label">Enveloppe</div>
+        <div class="isolation-status status-bad">Insuffisante</div>
+      </div>
+      <div class="isolation-item">
+        <div class="isolation-label">Murs</div>
+        <div class="isolation-status status-bad">Insuffisante</div>
+      </div>
+      <div class="isolation-item">
+        <div class="isolation-label">Menuiseries</div>
+        <div class="isolation-status status-bad">Insuffisante</div>
+      </div>
+      <div class="isolation-item">
+        <div class="isolation-label">Plancher bas</div>
+        <div class="isolation-status status-bad">Insuffisante</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DÉPERDITIONS ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Déperditions thermiques</div></div>
+    <div class="grid-3">
+      <div class="stat-card">
+        <div class="stat-label">Murs</div>
+        <div class="stat-value">528 W/K</div>
+        <div class="stat-sub">26% des pertes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Baies vitrées</div>
+        <div class="stat-value">316 W/K</div>
+        <div class="stat-sub">16% des pertes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total enveloppe</div>
+        <div class="stat-value danger">1 994 W/K</div>
+        <div class="stat-sub">déperdition globale</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROPRIÉTAIRE ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Propriétaire identifié</div></div>
+    <div class="owner-card">
+      <div class="owner-type">Société Civile Immobilière</div>
+      <div class="owner-name">SCI SAINT AUBIN</div>
+      <div class="owner-grid">
+        <div class="owner-detail">
+          <strong>SIREN</strong>
+          306 851 874
+        </div>
+        <div class="owner-detail">
+          <strong>Activité</strong>
+          Location immobilière (68.20B)
+        </div>
+        <div class="owner-detail">
+          <strong>Gérant 1</strong>
+          Françoise Geneau de Lamarlière
+        </div>
+        <div class="owner-detail">
+          <strong>Gérant 2</strong>
+          Pascale Cuny
+        </div>
+      </div>
+      <div class="owner-alert">
+        SCI active en location immobilière. Directement impactée par l'interdiction de location des logements classés F au 1er janvier 2028.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRAVAUX ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Travaux prioritaires</div></div>
+    <div class="travaux-item">
+      <div class="travaux-num">1</div>
+      <div class="travaux-desc"><strong>Remplacement chaudière fioul</strong> <span>— Pompe à chaleur air/eau</span><span class="tag-specialty">Votre spécialité</span></div>
+      <div class="travaux-impact">-60% conso</div>
+    </div>
+    <div class="travaux-item">
+      <div class="travaux-num p2">2</div>
+      <div class="travaux-desc"><strong>Isolation des murs</strong> <span>— Par l'intérieur ou l'extérieur</span></div>
+      <div class="travaux-impact">-26% pertes</div>
+    </div>
+    <div class="travaux-item">
+      <div class="travaux-num p3">3</div>
+      <div class="travaux-desc"><strong>Remplacement menuiseries</strong> <span>— Double ou triple vitrage</span></div>
+      <div class="travaux-impact">-16% pertes</div>
+    </div>
+  </div>
+
+  <!-- ═══ ARGUMENTS ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Arguments clés</div></div>
+    <div class="key-points">
+      <div class="key-point">
+        <div class="key-point-icon kpi-urgent">!</div>
+        <div class="key-point-text">
+          <strong>Location interdite en 2028</strong>
+          Ce bien classé F ne pourra plus être loué dans moins de 2 ans
+        </div>
+      </div>
+      <div class="key-point">
+        <div class="key-point-icon kpi-money">€</div>
+        <div class="key-point-text">
+          <strong>~13 000 €/an d'économies</strong>
+          Passage de 18 110 € à ~5 000 € de facture énergie
+        </div>
+      </div>
+      <div class="key-point">
+        <div class="key-point-icon kpi-eco">A</div>
+        <div class="key-point-text">
+          <strong>Aides cumulables</strong>
+          MaPrimeRénov' + CEE + éco-PTZ pour réduire le reste à charge
+        </div>
+      </div>
+      <div class="key-point">
+        <div class="key-point-icon kpi-value">+</div>
+        <div class="key-point-text">
+          <strong>+10 à 15% de valeur</strong>
+          Un passage de F à D augmente la valeur à la revente
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ACCROCHE ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Accroche de prospection suggérée</div></div>
+    <div class="accroche-box">
+      <div class="accroche-text">
+        Madame, Monsieur,<br><br>
+        Votre bien situé au 21 Rue de Douai à Bapaume est actuellement classé F au diagnostic de performance énergétique. À compter du 1er janvier 2028, les logements classés F ne pourront plus être proposés à la location.<br><br>
+        Votre facture énergétique actuelle est estimée à plus de 18 000 € par an, principalement liée à votre chauffage au fioul. Le remplacement de votre chaudière par une pompe à chaleur permettrait de diviser cette facture par 3 à 4.<br><br>
+        Nous vous proposons un diagnostic gratuit et sans engagement pour évaluer les travaux nécessaires et les aides auxquelles vous avez droit.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ OBJECTIONS ═══ -->
+  <div class="section">
+    <div class="section-title-wrap"><div class="section-title">Objections anticipées</div></div>
+    <div class="objections-wrap">
+      <div class="objection">
+        <div class="objection-q">"C'est trop cher"</div>
+        <div class="objection-a">Avec MaPrimeRénov' et les CEE, le reste à charge est significativement réduit. L'éco-PTZ finance le reste sans intérêts sur 20 ans.</div>
+      </div>
+      <div class="objection">
+        <div class="objection-q">"J'attends 2028"</div>
+        <div class="objection-a">Les aides diminuent chaque année. Votre chaudière fioul peut tomber en panne sans possibilité de remplacement à l'identique (interdit depuis 2022).</div>
+      </div>
+      <div class="objection">
+        <div class="objection-q">"Je vais vendre"</div>
+        <div class="objection-a">Un bien F se vend 10 à 15% moins cher qu'un D. Les acheteurs négocient fortement les passoires thermiques.</div>
+      </div>
+      <div class="objection">
+        <div class="objection-q">"Le fioul me va"</div>
+        <div class="objection-a">Les chaudières fioul neuves sont interdites depuis 2022. En cas de panne, vous devrez changer de système.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CTA ═══ -->
+  <div class="cta-banner">
+    <div class="cta-count"><em>847</em> autres biens similaires</div>
+    <div class="cta-text">identifiés dans un rayon de <strong>30 km autour de Saint-Omer</strong><br>dont <strong>312 chauffés au fioul</strong> — directement dans votre spécialité</div>
+    <div class="cta-contact">Intéressé ? Contactez Elliot — <a href="mailto:elliot@renoradar.fr">elliot@renoradar.fr</a></div>
+  </div>
+
+  <!-- ═══ FOOTER ═══ -->
+  <div class="footer">
+    <div class="footer-logo">
+      <svg width="16" height="16" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="20" stroke="#999" stroke-width="2.5" fill="none" stroke-dasharray="95 32"/>
+        <circle cx="24" cy="24" r="14" stroke="#999" stroke-width="2.5" fill="none" stroke-dasharray="66 22"/>
+        <circle cx="24" cy="24" r="8" stroke="#999" stroke-width="2.5" fill="none" stroke-dasharray="38 13"/>
+        <circle cx="24" cy="24" r="3" fill="#999"/>
+        <line x1="24" y1="24" x2="38" y2="10" stroke="#999" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      RénoRadar
+    </div>
+    <div>Données ADEME (Licence Ouverte v2.0) — DPE du 02/10/2024</div>
+    <div>Fiche générée le 22/03/2026</div>
+  </div>
+
+</div>
+</body>
+</html>
