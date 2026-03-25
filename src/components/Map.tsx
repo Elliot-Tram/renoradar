@@ -1,6 +1,7 @@
 "use client";
 
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
+import { useEffect } from "react";
+import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-leaflet";
 import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
 import type { MapPoint } from "@/types";
@@ -13,6 +14,17 @@ const DEPT_CENTERS: Record<string, [number, number]> = {
 
 function getDpeColor(dpe: string): string {
   return dpe === "G" ? "#EE1D23" : "#F08C1E";
+}
+
+function RecenterMap({ department }: { department: string }) {
+  const map = useMap();
+  const center = DEPT_CENTERS[department] || DEPT_CENTERS["62"];
+
+  useEffect(() => {
+    map.flyTo(center, 9, { duration: 1 });
+  }, [department, center, map]);
+
+  return null;
 }
 
 interface MapProps {
@@ -31,6 +43,7 @@ export default function Map({ department, points }: MapProps) {
       className="h-full w-full"
       zoomControl={true}
     >
+      <RecenterMap department={department} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
