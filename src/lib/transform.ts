@@ -47,9 +47,20 @@ export function ademeToPublic(record: AdemeRecord): ProspectPublic {
     surfaceRange: getSurfaceRange(record.surface_habitable_logement || 0),
     score: scoreFromRecord(record),
     hasOwnerInfo: false,
+    coutAnnuel: record.cout_total_5_usages || null,
+    isolationResume: getIsolationResume(record),
     latitude: jitterCoord(record.latitude_ban, record.n_dpe, "lat"),
     longitude: jitterCoord(record.longitude_ban, record.n_dpe, "lng"),
   };
+}
+
+function getIsolationResume(record: AdemeRecord): string | null {
+  const env = record.qualite_isolation_enveloppe?.toLowerCase();
+  if (!env) return null;
+  if (env.includes("très bonne") || env.includes("bonne")) return "Bonne";
+  if (env.includes("moyenne")) return "Moyenne";
+  if (env.includes("insuffisante")) return "Insuffisante";
+  return null;
 }
 
 export function ademeToDetail(record: AdemeRecord): ProspectDetail {

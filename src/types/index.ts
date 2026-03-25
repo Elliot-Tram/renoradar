@@ -10,6 +10,8 @@ export interface ProspectPublic {
   surfaceRange: string;
   score: number;
   hasOwnerInfo: boolean;
+  coutAnnuel: number | null;
+  isolationResume: string | null; // "bonne", "insuffisante", "moyenne"
   latitude: number;
   longitude: number;
 }

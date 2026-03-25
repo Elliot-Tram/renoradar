@@ -1,14 +1,17 @@
 const BASE_URL =
   "https://data.ademe.fr/data-fair/api/v1/datasets/meg-83tjwtg8dyz4vv7h1dqe/lines";
 
-interface AdemeFilters {
+export interface AdemeFilters {
   department: string;
-  etiquetteDpe?: string[]; // ["F", "G"]
+  etiquetteDpe?: string[];
   typeBatiment?: string;
   typeEnergieChauffage?: string;
   surfaceMin?: number;
   surfaceMax?: number;
   dateMin?: string; // YYYY-MM-DD
+  isolationMurs?: string; // "bonne", "insuffisante", etc.
+  isolationEnveloppe?: string;
+  isolationMenuiseries?: string;
   size?: number;
   page?: number;
 }
@@ -25,6 +28,7 @@ export interface AdemeRecord {
   consommation_energie: number;
   emission_ges: number;
   cout_total_5_usages: number;
+  cout_chauffage: number;
   type_batiment: string;
   surface_habitable_logement: number;
   annee_construction: number;
@@ -38,7 +42,6 @@ export interface AdemeRecord {
   qualite_isolation_plancher_bas: string;
   qualite_isolation_menuiseries: string;
   type_vitrage: string;
-  // Adresse
   adresse_ban: string;
   code_postal_ban: string;
   nom_commune_ban: string;
@@ -55,6 +58,7 @@ const SELECT_FIELDS = [
   "consommation_energie",
   "emission_ges",
   "cout_total_5_usages",
+  "cout_chauffage",
   "type_batiment",
   "surface_habitable_logement",
   "annee_construction",
@@ -101,27 +105,42 @@ export async function fetchAdemeRecords(
   }
 
   if (filters.typeEnergieChauffage) {
-    params.set(
-      "type_energie_principale_chauffage_eq",
-      filters.typeEnergieChauffage
-    );
+    params.set("type_energie_principale_chauffage_eq", filters.typeEnergieChauffage);
   }
 
   if (filters.surfaceMin) {
-    params.set(
-      "surface_habitable_logement_gte",
-      filters.surfaceMin.toString()
-    );
+    params.set("surface_habitable_logement_gte", filters.surfaceMin.toString());
   }
   if (filters.surfaceMax) {
-    params.set(
-      "surface_habitable_logement_lte",
-      filters.surfaceMax.toString()
-    );
+    params.set("surface_habitable_logement_lte", filters.surfaceMax.toString());
   }
 
   if (filters.dateMin) {
     params.set("date_etablissement_dpe_gte", filters.dateMin);
+  }
+
+  if (filters.isolationMurs) {
+    if (filters.isolationMurs.includes(",")) {
+      params.set("qualite_isolation_murs_in", filters.isolationMurs);
+    } else {
+      params.set("qualite_isolation_murs_eq", filters.isolationMurs);
+    }
+  }
+
+  if (filters.isolationEnveloppe) {
+    if (filters.isolationEnveloppe.includes(",")) {
+      params.set("qualite_isolation_enveloppe_in", filters.isolationEnveloppe);
+    } else {
+      params.set("qualite_isolation_enveloppe_eq", filters.isolationEnveloppe);
+    }
+  }
+
+  if (filters.isolationMenuiseries) {
+    if (filters.isolationMenuiseries.includes(",")) {
+      params.set("qualite_isolation_menuiseries_in", filters.isolationMenuiseries);
+    } else {
+      params.set("qualite_isolation_menuiseries_eq", filters.isolationMenuiseries);
+    }
   }
 
   params.set("size", (filters.size || 100).toString());
@@ -134,7 +153,7 @@ export async function fetchAdemeRecords(
 
   const res = await fetch(`${BASE_URL}?${params.toString()}`, {
     headers: getHeaders(),
-    next: { revalidate: 3600 }, // cache 1h
+    next: { revalidate: 3600 },
   });
 
   if (!res.ok) {
