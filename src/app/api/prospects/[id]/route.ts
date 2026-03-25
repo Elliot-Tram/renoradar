@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { fetchAdemeByDpeId } from "@/lib/ademe";
+import { ademeToDetail } from "@/lib/transform";
 
 export async function GET(
   request: NextRequest,
@@ -7,40 +8,22 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const prospect = await prisma.prospect.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      city: true,
-      postalCode: true,
-      department: true,
-      etiquetteDpe: true,
-      typeBatiment: true,
-      typeEnergieChauffage: true,
-      surfaceHabitable: true,
-      score: true,
-      consommationEnergie: true,
-      emissionGes: true,
-      anneeConstruction: true,
-      nbNiveaux: true,
-      isolationMurs: true,
-      isolationToiture: true,
-      isolationPlancher: true,
-      typeVitrage: true,
-      typeEnergieEcs: true,
-      dateEtablissementDpe: true,
-      proprietaireNom: true,
-      latitude: true,
-      longitude: true,
-    },
-  });
+  try {
+    const record = await fetchAdemeByDpeId(id);
 
-  if (!prospect) {
-    return NextResponse.json({ error: "Prospect non trouvé" }, { status: 404 });
+    if (!record) {
+      return NextResponse.json(
+        { error: "Prospect non trouvé" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(ademeToDetail(record));
+  } catch (error) {
+    console.error("ADEME API error:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de la récupération des données" },
+      { status: 500 }
+    );
   }
-
-  // TODO: check if user has unlocked this prospect to return full info
-  // For now, return public fields only
-
-  return NextResponse.json(prospect);
 }

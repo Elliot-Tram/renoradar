@@ -1,36 +1,12 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import DpeBadge from "@/components/DpeBadge";
 import ScoreBadge from "@/components/ScoreBadge";
-
-// Données de démo
-const DEMO_PROSPECT = {
-  id: "1",
-  city: "Bapaume",
-  postalCode: "62450",
-  department: "62",
-  dpe: "G",
-  chauffage: "Fioul domestique",
-  surface: "92 m²",
-  surfaceRange: "80-100 m²",
-  typeBatiment: "Maison",
-  score: 85,
-  hasOwner: true,
-  consommation: 425,
-  ges: 98,
-  anneeConstruction: 1965,
-  nbNiveaux: 2,
-  isolationMurs: "Isolation insuffisante",
-  isolationToiture: "Isolation insuffisante",
-  isolationPlancher: "Non isolé",
-  typeVitrage: "Simple vitrage",
-  typeEcs: "Fioul domestique",
-  dateEtablissementDpe: "2024-11-15",
-};
+import type { ProspectDetail } from "@/types";
 
 function LockIcon() {
   return (
@@ -41,9 +17,52 @@ function LockIcon() {
   );
 }
 
+function getIsolationColor(value: string | null): string {
+  if (!value) return "text-gray-400";
+  const v = value.toLowerCase();
+  if (v.includes("insuffisant")) return "text-dpe-g";
+  if (v.includes("moyenne") || v.includes("moyen")) return "text-orange-500";
+  if (v.includes("bonne") || v.includes("très")) return "text-green-600";
+  return "text-gray-900";
+}
+
 export default function ProspectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const prospect = DEMO_PROSPECT; // TODO: fetch from API
+  const [prospect, setProspect] = useState<ProspectDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/prospects/${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Not found");
+        return res.json();
+      })
+      .then(setProspect)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6">
+        <div className="h-4 bg-gray-200 rounded w-32" />
+        <div className="h-48 bg-gray-100 rounded-2xl" />
+        <div className="h-48 bg-gray-100 rounded-2xl" />
+      </div>
+    );
+  }
+
+  if (error || !prospect) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-gray-500 mb-4">Prospect non trouvé</p>
+        <Link href="/prospects">
+          <Button variant="outline">Retour aux prospects</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -67,7 +86,9 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
                   <h1 className="font-heading text-2xl font-bold text-gray-900">{prospect.city}</h1>
                   <span className="text-gray-400">{prospect.postalCode}</span>
                 </div>
-                <p className="text-gray-500">Pas-de-Calais (62)</p>
+                <p className="text-gray-500">
+                  {prospect.department === "62" ? "Pas-de-Calais" : prospect.department === "38" ? "Isère" : "Moselle"} ({prospect.department})
+                </p>
               </div>
               <ScoreBadge score={prospect.score} />
             </div>
@@ -75,15 +96,15 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-gray-50 rounded-xl p-4">
                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-medium">DPE</div>
-                <DpeBadge etiquette={prospect.dpe} size="lg" />
+                <DpeBadge etiquette={prospect.etiquetteDpe} size="lg" />
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-medium">Chauffage</div>
-                <p className="font-heading font-bold text-gray-900">{prospect.chauffage}</p>
+                <p className="font-heading font-bold text-gray-900 text-sm">{prospect.typeEnergieChauffage}</p>
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-medium">Surface</div>
-                <p className="font-heading font-bold text-gray-900">{prospect.surface}</p>
+                <p className="font-heading font-bold text-gray-900">{Math.round(prospect.surfaceHabitable)} m²</p>
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
                 <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-medium">Type</div>
@@ -99,22 +120,24 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
               <div>
                 <span className="text-xs text-gray-400 uppercase tracking-wider">Consommation</span>
                 <p className="font-heading text-2xl font-bold text-gray-900 mt-1">
-                  {prospect.consommation} <span className="text-sm text-gray-400 font-normal">kWh/m²/an</span>
+                  {prospect.consommationEnergie ? Math.round(prospect.consommationEnergie) : "—"}{" "}
+                  <span className="text-sm text-gray-400 font-normal">kWh/m²/an</span>
                 </p>
               </div>
               <div>
-                <span className="text-xs text-gray-400 uppercase tracking-wider">Émissions GES</span>
+                <span className="text-xs text-gray-400 uppercase tracking-wider">Facture annuelle</span>
                 <p className="font-heading text-2xl font-bold text-gray-900 mt-1">
-                  {prospect.ges} <span className="text-sm text-gray-400 font-normal">kgCO₂/m²/an</span>
+                  {prospect.coutAnnuel ? `${Math.round(prospect.coutAnnuel).toLocaleString("fr-FR")} €` : "—"}
+                  <span className="text-sm text-gray-400 font-normal"> /an</span>
                 </p>
               </div>
               <div>
                 <span className="text-xs text-gray-400 uppercase tracking-wider">Année construction</span>
-                <p className="font-heading text-xl font-bold text-gray-900 mt-1">{prospect.anneeConstruction}</p>
+                <p className="font-heading text-xl font-bold text-gray-900 mt-1">{prospect.anneeConstruction || "—"}</p>
               </div>
               <div>
                 <span className="text-xs text-gray-400 uppercase tracking-wider">Niveaux</span>
-                <p className="font-heading text-xl font-bold text-gray-900 mt-1">{prospect.nbNiveaux}</p>
+                <p className="font-heading text-xl font-bold text-gray-900 mt-1">{prospect.nbNiveaux || "—"}</p>
               </div>
             </div>
           </Card>
@@ -124,20 +147,16 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
             <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">État d&apos;isolation</h2>
             <div className="space-y-3">
               {[
+                { label: "Enveloppe", value: prospect.isolationEnveloppe },
                 { label: "Murs", value: prospect.isolationMurs },
-                { label: "Toiture", value: prospect.isolationToiture },
+                { label: "Menuiseries", value: prospect.isolationMenuiseries },
                 { label: "Plancher bas", value: prospect.isolationPlancher },
-                { label: "Vitrage", value: prospect.typeVitrage },
-                { label: "Eau chaude", value: prospect.typeEcs },
+                { label: "Eau chaude", value: prospect.typeEnergieEcs },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                   <span className="text-sm text-gray-500">{item.label}</span>
-                  <span className={`text-sm font-medium ${
-                    item.value?.toLowerCase().includes("insuffisant") || item.value?.toLowerCase().includes("non isolé") || item.value?.toLowerCase().includes("simple")
-                      ? "text-dpe-g"
-                      : "text-gray-900"
-                  }`}>
-                    {item.value}
+                  <span className={`text-sm font-medium ${getIsolationColor(item.value)}`}>
+                    {item.value || "—"}
                   </span>
                 </div>
               ))}
@@ -180,6 +199,12 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
               Débloquez d&apos;abord la fiche
             </Button>
           </Card>
+
+          <div className="text-xs text-gray-400 text-center">
+            DPE du {new Date(prospect.dateEtablissementDpe).toLocaleDateString("fr-FR")}
+            <br />
+            Source : ADEME (Licence Ouverte v2.0)
+          </div>
         </div>
       </div>
     </div>

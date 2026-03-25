@@ -7,33 +7,41 @@ export interface ProspectPublic {
   etiquetteDpe: string;
   typeBatiment: string;
   typeEnergieChauffage: string;
-  surfaceRange: string; // "60-80 m²", "80-100 m²"...
+  surfaceRange: string;
   score: number;
   hasOwnerInfo: boolean;
   latitude: number;
   longitude: number;
 }
 
-// Type après déblocage
-export interface ProspectFull extends ProspectPublic {
-  address: string;
+// Type détail (champs visibles + champs verrouillés)
+export interface ProspectDetail extends ProspectPublic {
   surfaceHabitable: number;
   anneeConstruction: number | null;
   consommationEnergie: number | null;
   emissionGes: number | null;
+  coutAnnuel: number | null;
   isolationMurs: string | null;
-  isolationToiture: string | null;
+  isolationEnveloppe: string | null;
   isolationPlancher: string | null;
+  isolationMenuiseries: string | null;
   typeVitrage: string | null;
   typeEnergieEcs: string | null;
-  proprietaireType: string | null;
-  proprietaireNom: string | null;
-  dirigeantNom: string | null;
-  dirigeantEmail: string | null;
-  dernierPrixVente: number | null;
-  dateDerniereVente: string | null;
   dateEtablissementDpe: string;
-  argumentaire: string[];
+  nbNiveaux: number | null;
+  // Champs verrouillés (null si pas débloqué)
+  address: string | null;
+  isUnlocked: boolean;
+}
+
+// Point pour la carte
+export interface MapPoint {
+  id: string;
+  lat: number;
+  lng: number;
+  dpe: string;
+  city: string;
+  score: number;
 }
 
 // Filtres de recherche
@@ -46,14 +54,4 @@ export interface ProspectFilters {
   typeBatiment?: string;
   scoreMin?: number;
   page?: number;
-}
-
-// Stats dashboard
-export interface DepartmentStats {
-  department: string;
-  totalProspects: number;
-  totalF: number;
-  totalG: number;
-  topChauffage: string;
-  avgScore: number;
 }

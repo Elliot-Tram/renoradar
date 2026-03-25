@@ -24,6 +24,7 @@ export interface AdemeRecord {
   date_etablissement_dpe: string;
   consommation_energie: number;
   emission_ges: number;
+  cout_total_5_usages: number;
   type_batiment: string;
   surface_habitable_logement: number;
   annee_construction: number;
@@ -32,9 +33,10 @@ export interface AdemeRecord {
   type_installation_chauffage: string;
   type_energie_chauffage_appoint: string;
   type_energie_principale_ecs: string;
-  isolation_mur: string;
-  isolation_toiture: string;
-  isolation_plancher_bas: string;
+  qualite_isolation_murs: string;
+  qualite_isolation_enveloppe: string;
+  qualite_isolation_plancher_bas: string;
+  qualite_isolation_menuiseries: string;
   type_vitrage: string;
   // Adresse
   adresse_ban: string;
@@ -46,25 +48,58 @@ export interface AdemeRecord {
   code_commune_ban: string;
 }
 
+const SELECT_FIELDS = [
+  "n_dpe",
+  "etiquette_dpe",
+  "date_etablissement_dpe",
+  "consommation_energie",
+  "emission_ges",
+  "cout_total_5_usages",
+  "type_batiment",
+  "surface_habitable_logement",
+  "annee_construction",
+  "nombre_niveau_logement",
+  "type_energie_principale_chauffage",
+  "type_installation_chauffage",
+  "type_energie_chauffage_appoint",
+  "type_energie_principale_ecs",
+  "qualite_isolation_murs",
+  "qualite_isolation_enveloppe",
+  "qualite_isolation_plancher_bas",
+  "qualite_isolation_menuiseries",
+  "type_vitrage",
+  "adresse_ban",
+  "code_postal_ban",
+  "nom_commune_ban",
+  "code_departement_ban",
+  "latitude_ban",
+  "longitude_ban",
+  "code_commune_ban",
+].join(",");
+
+function getHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (process.env.ADEME_API_KEY) {
+    headers["Authorization"] = `Bearer ${process.env.ADEME_API_KEY}`;
+  }
+  return headers;
+}
+
 export async function fetchAdemeRecords(
   filters: AdemeFilters
 ): Promise<AdemeResponse> {
   const params = new URLSearchParams();
 
-  // Département obligatoire
   params.set("code_departement_ban_eq", filters.department);
 
-  // DPE
   if (filters.etiquetteDpe?.length) {
     params.set("etiquette_dpe_in", filters.etiquetteDpe.join(","));
   }
 
-  // Type bâtiment
   if (filters.typeBatiment) {
     params.set("type_batiment_eq", filters.typeBatiment);
   }
 
-  // Chauffage
   if (filters.typeEnergieChauffage) {
     params.set(
       "type_energie_principale_chauffage_eq",
@@ -72,7 +107,6 @@ export async function fetchAdemeRecords(
     );
   }
 
-  // Surface
   if (filters.surfaceMin) {
     params.set(
       "surface_habitable_logement_gte",
@@ -86,63 +120,48 @@ export async function fetchAdemeRecords(
     );
   }
 
-  // Date min (DPE récents uniquement)
   if (filters.dateMin) {
     params.set("date_etablissement_dpe_gte", filters.dateMin);
   }
 
-  // Pagination
   params.set("size", (filters.size || 100).toString());
   if (filters.page && filters.page > 1) {
     params.set("after", ((filters.page - 1) * (filters.size || 100)).toString());
   }
 
-  // Tri par date décroissante
   params.set("sort", "date_etablissement_dpe:-1");
+  params.set("select", SELECT_FIELDS);
 
-  // Sélection des champs utiles
-  params.set(
-    "select",
-    [
-      "n_dpe",
-      "etiquette_dpe",
-      "date_etablissement_dpe",
-      "consommation_energie",
-      "emission_ges",
-      "type_batiment",
-      "surface_habitable_logement",
-      "annee_construction",
-      "nombre_niveau_logement",
-      "type_energie_principale_chauffage",
-      "type_installation_chauffage",
-      "type_energie_chauffage_appoint",
-      "type_energie_principale_ecs",
-      "isolation_mur",
-      "isolation_toiture",
-      "isolation_plancher_bas",
-      "type_vitrage",
-      "adresse_ban",
-      "code_postal_ban",
-      "nom_commune_ban",
-      "code_departement_ban",
-      "latitude_ban",
-      "longitude_ban",
-      "code_commune_ban",
-    ].join(",")
-  );
-
-  const headers: Record<string, string> = {};
-  if (process.env.ADEME_API_KEY) {
-    headers["Authorization"] = `Bearer ${process.env.ADEME_API_KEY}`;
-  }
-
-  const res = await fetch(`${BASE_URL}?${params.toString()}`, { headers });
+  const res = await fetch(`${BASE_URL}?${params.toString()}`, {
+    headers: getHeaders(),
+    next: { revalidate: 3600 }, // cache 1h
+  });
 
   if (!res.ok) {
     throw new Error(`ADEME API error: ${res.status} ${res.statusText}`);
   }
 
   return res.json();
+}
+
+export async function fetchAdemeByDpeId(
+  nDpe: string
+): Promise<AdemeRecord | null> {
+  const params = new URLSearchParams({
+    n_dpe_eq: nDpe,
+    size: "1",
+    select: SELECT_FIELDS,
+  });
+
+  const res = await fetch(`${BASE_URL}?${params.toString()}`, {
+    headers: getHeaders(),
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) return null;
+
+  const data: AdemeResponse = await res.json();
+  return data.results[0] || null;
 }
 
 export async function countAdemeRecords(
@@ -155,12 +174,9 @@ export async function countAdemeRecords(
     size: "0",
   });
 
-  const headers: Record<string, string> = {};
-  if (process.env.ADEME_API_KEY) {
-    headers["Authorization"] = `Bearer ${process.env.ADEME_API_KEY}`;
-  }
-
-  const res = await fetch(`${BASE_URL}?${params.toString()}`, { headers });
+  const res = await fetch(`${BASE_URL}?${params.toString()}`, {
+    headers: getHeaders(),
+  });
   const data = await res.json();
   return data.total;
 }
