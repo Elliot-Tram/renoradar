@@ -7,7 +7,7 @@ interface ScoreInput {
   dateEtablissementDpe: Date;
   hasOwnerInfo: boolean;
   isolationMurs: string | null;
-  isolationToiture: string | null;
+  isolationToiture: string | null; // enveloppe
 }
 
 /**
@@ -17,38 +17,48 @@ interface ScoreInput {
 export function computeScore(input: ScoreInput): number {
   let score = 0;
 
-  // DPE : G vaut plus que F (plus urgent)
-  if (input.etiquetteDpe === "G") score += 25;
-  else if (input.etiquetteDpe === "F") score += 15;
+  // DPE : urgence réglementaire
+  if (input.etiquetteDpe === "G") score += 25;      // interdit location depuis 2025
+  else if (input.etiquetteDpe === "F") score += 20;  // interdit en 2028
+  else if (input.etiquetteDpe === "E") score += 12;  // interdit en 2034
+  else if (input.etiquetteDpe === "D") score += 5;   // pas urgent mais potentiel solaire
 
-  // Chauffage fioul = remplacement quasi-certain
+  // Chauffage : type d'énergie à remplacer
   const chauffage = input.typeEnergieChauffage.toLowerCase();
   if (chauffage.includes("fioul")) score += 20;
-  else if (chauffage.includes("gaz")) score += 10;
   else if (chauffage.includes("charbon")) score += 20;
-  else if (chauffage.includes("électri") || chauffage.includes("electri")) score += 5;
+  else if (chauffage.includes("gaz")) score += 12;
+  else if (chauffage.includes("électri") || chauffage.includes("electri")) score += 8;
+  else if (chauffage.includes("bois")) score += 5;
 
   // Surface : plus c'est grand, plus le chantier vaut
   if (input.surfaceHabitable >= 150) score += 15;
-  else if (input.surfaceHabitable >= 100) score += 12;
+  else if (input.surfaceHabitable >= 120) score += 12;
+  else if (input.surfaceHabitable >= 100) score += 10;
   else if (input.surfaceHabitable >= 80) score += 8;
   else if (input.surfaceHabitable >= 60) score += 5;
 
   // Maison > appartement (travaux plus simples)
-  if (input.typeBatiment.toLowerCase() === "maison") score += 10;
+  if (input.typeBatiment.toLowerCase() === "maison") score += 8;
 
-  // DPE récent = données fiables
+  // DPE récent = données fiables + proprio en démarche active
   const ageMonths =
     (Date.now() - input.dateEtablissementDpe.getTime()) / (1000 * 60 * 60 * 24 * 30);
-  if (ageMonths <= 12) score += 10;
-  else if (ageMonths <= 24) score += 5;
+  if (ageMonths <= 6) score += 12;       // très frais
+  else if (ageMonths <= 12) score += 8;
+  else if (ageMonths <= 24) score += 4;
 
-  // Propriétaire identifié = prospection possible
-  if (input.hasOwnerInfo) score += 10;
+  // Propriétaire identifié
+  if (input.hasOwnerInfo) score += 8;
 
-  // Isolation déficiente = opportunité
-  if (input.isolationMurs?.toLowerCase().includes("insuffisant")) score += 5;
-  if (input.isolationToiture?.toLowerCase().includes("insuffisant")) score += 5;
+  // Isolation — les deux cas ont de la valeur selon le métier
+  const murs = input.isolationMurs?.toLowerCase() || "";
+  const enveloppe = input.isolationToiture?.toLowerCase() || "";
+
+  // Bonne isolation = prêt pour PAC (bon pour installateurs chauffage)
+  if (enveloppe.includes("bonne") || enveloppe.includes("très")) score += 5;
+  // Mauvaise isolation = opportunité pour isolateurs
+  if (murs.includes("insuffisant")) score += 5;
 
   return Math.min(score, 100);
 }
