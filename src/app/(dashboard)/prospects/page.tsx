@@ -6,36 +6,9 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import DpeBadge from "@/components/DpeBadge";
 import ScoreBadge from "@/components/ScoreBadge";
-import { SPECIALTIES, getSpecialtyById } from "@/lib/specialties";
+import { getSpecialtyById } from "@/lib/specialties";
+import { getProfile } from "@/lib/profile";
 import type { ProspectPublic } from "@/types";
-
-const DEPARTMENTS = [
-  { code: "62", label: "Pas-de-Calais (62)" },
-  { code: "38", label: "Isère (38)" },
-  { code: "57", label: "Moselle (57)" },
-];
-
-const CHAUFFAGE_OPTIONS = [
-  { value: "", label: "Tous chauffages" },
-  { value: "Fioul domestique", label: "Fioul" },
-  { value: "Gaz naturel", label: "Gaz" },
-  { value: "Électricité", label: "Électricité" },
-  { value: "Bois - Bûches", label: "Bois" },
-];
-
-const FRESHNESS_OPTIONS = [
-  { value: "", label: "Tous les DPE" },
-  { value: "6", label: "< 6 mois" },
-  { value: "18", label: "< 18 mois" },
-  { value: "36", label: "< 3 ans" },
-];
-
-function getDateMin(months: string): string | undefined {
-  if (!months) return undefined;
-  const d = new Date();
-  d.setMonth(d.getMonth() - parseInt(months));
-  return d.toISOString().split("T")[0];
-}
 
 function getIsolationBadge(value: string | null) {
   if (!value) return null;
@@ -47,27 +20,15 @@ function getIsolationBadge(value: string | null) {
 }
 
 export default function ProspectsPage() {
-  const [department, setDepartment] = useState("62");
-  const [specialty, setSpecialty] = useState("all");
-  const [chauffage, setChauffage] = useState("");
-  const [freshness, setFreshness] = useState("");
-  const [surfaceMin, setSurfaceMin] = useState(0);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const profile = getProfile();
+  const department = profile?.department || "62";
+  const specialty = profile?.specialty || "all";
+
   const [prospects, setProspects] = useState<ProspectPublic[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-
-  // Quand on change de spécialité
-  useEffect(() => {
-    const spec = getSpecialtyById(specialty);
-    if (spec.filters.typeEnergieChauffage) setChauffage(spec.filters.typeEnergieChauffage);
-    else setChauffage("");
-    if (spec.filters.surfaceMin) setSurfaceMin(spec.filters.surfaceMin);
-    else setSurfaceMin(0);
-    setPage(1);
-  }, [specialty]);
 
   const fetchProspects = useCallback(async () => {
     setLoading(true);
@@ -80,12 +41,9 @@ export default function ProspectsPage() {
         dpe: dpe.join(","),
         page: page.toString(),
       });
-      if (chauffage) params.set("chauffage", chauffage);
-      if (surfaceMin > 0) params.set("surfaceMin", surfaceMin.toString());
 
-      const dateMin = getDateMin(freshness);
-      if (dateMin) params.set("dateMin", dateMin);
-
+      if (spec.filters.typeEnergieChauffage) params.set("chauffage", spec.filters.typeEnergieChauffage);
+      if (spec.filters.surfaceMin) params.set("surfaceMin", spec.filters.surfaceMin.toString());
       if (spec.filters.isolationMurs) params.set("isolationMurs", spec.filters.isolationMurs);
       if (spec.filters.isolationEnveloppe) params.set("isolationEnveloppe", spec.filters.isolationEnveloppe);
       if (spec.filters.isolationMenuiseries) params.set("isolationMenuiseries", spec.filters.isolationMenuiseries);
@@ -100,115 +58,28 @@ export default function ProspectsPage() {
     } finally {
       setLoading(false);
     }
-  }, [department, specialty, chauffage, freshness, surfaceMin, page]);
+  }, [department, specialty, page]);
 
   useEffect(() => {
     fetchProspects();
   }, [fetchProspects]);
 
+  const specLabel = getSpecialtyById(specialty);
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900">Prospects</h1>
-          <p className="text-gray-500 mt-1">
-            {loading ? "Chargement..." : (
-              <>
-                <span className="font-heading font-bold text-gray-900">{total.toLocaleString("fr-FR")}</span> prospect{total > 1 ? "s" : ""} trouvé{total > 1 ? "s" : ""}
-              </>
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* Specialty selector */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {SPECIALTIES.map((spec) => (
-          <button
-            key={spec.id}
-            onClick={() => setSpecialty(spec.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-              specialty === spec.id
-                ? "bg-gray-900 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {spec.label}
-          </button>
-        ))}
-      </div>
-
-      {specialty !== "all" && (
-        <p className="text-sm text-gray-400 mb-4">
-          {getSpecialtyById(specialty).description}
+      <div className="mb-6">
+        <h1 className="font-heading text-2xl font-bold text-gray-900">Prospects</h1>
+        <p className="text-gray-500 mt-1">
+          {loading ? "Chargement..." : (
+            <>
+              <span className="font-heading font-bold text-gray-900">{total.toLocaleString("fr-FR")}</span> prospect{total > 1 ? "s" : ""}
+              {specialty !== "all" && <span> — {specLabel.label}</span>}
+              {profile && <span className="text-gray-400"> — {profile.city} ({department})</span>}
+            </>
+          )}
         </p>
-      )}
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <div className="flex flex-wrap items-end gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Département</label>
-            <select
-              value={department}
-              onChange={(e) => { setDepartment(e.target.value); setPage(1); }}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-chartreuse/50"
-            >
-              {DEPARTMENTS.map((d) => (
-                <option key={d.code} value={d.code}>{d.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Chauffage</label>
-            <select
-              value={chauffage}
-              onChange={(e) => { setChauffage(e.target.value); setPage(1); }}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-chartreuse/50"
-            >
-              {CHAUFFAGE_OPTIONS.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Surface min.</label>
-            <input
-              type="number"
-              value={surfaceMin || ""}
-              onChange={(e) => { setSurfaceMin(Number(e.target.value)); setPage(1); }}
-              placeholder="0 m²"
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-24 bg-white focus:outline-none focus:ring-2 focus:ring-chartreuse/50"
-            />
-          </div>
-
-          <button
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-sm text-gray-400 hover:text-gray-600 transition-colors font-medium py-2 cursor-pointer"
-          >
-            {showAdvanced ? "Moins de filtres" : "Plus de filtres"}
-          </button>
-        </div>
-
-        {showAdvanced && (
-          <div className="flex flex-wrap items-end gap-4 mt-4 pt-4 border-t border-gray-100">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Fraîcheur DPE</label>
-              <select
-                value={freshness}
-                onChange={(e) => { setFreshness(e.target.value); setPage(1); }}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-chartreuse/50"
-              >
-                {FRESHNESS_OPTIONS.map((f) => (
-                  <option key={f.value} value={f.value}>{f.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-      </Card>
+      </div>
 
       {/* Prospect list */}
       {loading ? (
