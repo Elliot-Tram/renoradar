@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Card from "@/components/ui/Card";
 import { getSpecialtyById } from "@/lib/specialties";
@@ -11,11 +11,13 @@ import type { MapPoint } from "@/types";
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
 
 export default function CartePage() {
-  const profile = getProfile();
+  const profileRef = useRef(getProfile());
+  const profile = profileRef.current;
 
   const [points, setPoints] = useState<MapPoint[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const hasFetched = useRef(false);
 
   const department = profile?.department || "62";
   const specialty = profile?.specialty || "all";
@@ -24,45 +26,46 @@ export default function CartePage() {
     : undefined;
   const mapZoom = profile ? radiusToZoom(profile.radiusKm) : 9;
 
-  const fetchPoints = useCallback(async () => {
-    setLoading(true);
-    try {
-      const spec = getSpecialtyById(specialty);
-      const dpe = spec.filters.etiquetteDpe || ["F", "G"];
-
-      const params = new URLSearchParams({ department, dpe: dpe.join(",") });
-
-      if (spec.filters.typeEnergieChauffage) params.set("chauffage", spec.filters.typeEnergieChauffage);
-      if (spec.filters.surfaceMin) params.set("surfaceMin", spec.filters.surfaceMin.toString());
-      if (spec.filters.isolationMurs) params.set("isolationMurs", spec.filters.isolationMurs);
-      if (spec.filters.isolationEnveloppe) params.set("isolationEnveloppe", spec.filters.isolationEnveloppe);
-      if (spec.filters.isolationMenuiseries) params.set("isolationMenuiseries", spec.filters.isolationMenuiseries);
-
-      const res = await fetch(`/api/map-points?${params.toString()}`);
-      const data = await res.json();
-
-      let filteredPoints: MapPoint[] = data.points || [];
-
-      // Filtrer par rayon si profil défini
-      if (profile) {
-        filteredPoints = filteredPoints.filter((p) =>
-          distanceKm(profile.latitude, profile.longitude, p.lat, p.lng) <= profile.radiusKm
-        );
-      }
-
-      setPoints(filteredPoints);
-      setTotal(filteredPoints.length);
-    } catch {
-      setPoints([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, [department, specialty, profile]);
-
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    async function fetchPoints() {
+      try {
+        const spec = getSpecialtyById(specialty);
+        const dpe = spec.filters.etiquetteDpe || ["F", "G"];
+
+        const params = new URLSearchParams({ department, dpe: dpe.join(",") });
+
+        if (spec.filters.typeEnergieChauffage) params.set("chauffage", spec.filters.typeEnergieChauffage);
+        if (spec.filters.surfaceMin) params.set("surfaceMin", spec.filters.surfaceMin.toString());
+        if (spec.filters.isolationMurs) params.set("isolationMurs", spec.filters.isolationMurs);
+        if (spec.filters.isolationEnveloppe) params.set("isolationEnveloppe", spec.filters.isolationEnveloppe);
+        if (spec.filters.isolationMenuiseries) params.set("isolationMenuiseries", spec.filters.isolationMenuiseries);
+
+        const res = await fetch(`/api/map-points?${params.toString()}`);
+        const data = await res.json();
+
+        let filteredPoints: MapPoint[] = data.points || [];
+
+        if (profile) {
+          filteredPoints = filteredPoints.filter((p) =>
+            distanceKm(profile.latitude, profile.longitude, p.lat, p.lng) <= profile.radiusKm
+          );
+        }
+
+        setPoints(filteredPoints);
+        setTotal(filteredPoints.length);
+      } catch {
+        setPoints([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchPoints();
-  }, [fetchPoints]);
+  }, [department, specialty, profile]);
 
   const specLabel = getSpecialtyById(specialty);
 
@@ -83,7 +86,6 @@ export default function CartePage() {
         </p>
       </div>
 
-      {/* Map */}
       <Card padding="sm" className="overflow-hidden">
         <div className="h-[650px] rounded-xl overflow-hidden relative">
           {loading && (

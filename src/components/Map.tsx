@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, CircleMarker, Tooltip, Circle, useMap } from "react-leaflet";
 import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
@@ -18,10 +18,14 @@ function getDpeColor(dpe: string): string {
 
 function RecenterMap({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    map.flyTo(center, zoom, { duration: 1 });
-  }, [center[0], center[1], zoom, map]);
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      map.setView(center, zoom);
+    }
+  }, [center, zoom, map]);
 
   return null;
 }
