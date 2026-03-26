@@ -111,6 +111,24 @@ export default function CartePage() {
 
       <Card padding="sm" className="overflow-hidden">
         <div className="h-[650px] rounded-xl overflow-hidden relative">
+          {/* Légende */}
+          <div className="absolute top-4 right-4 z-[1000] bg-white/90 backdrop-blur-sm rounded-lg px-4 py-3 shadow-md border border-gray-200">
+            <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Pertinence</div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#22C55E]" />
+                <span className="text-xs text-gray-600">Excellent</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#C8F23D]" />
+                <span className="text-xs text-gray-600">Bon</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#F59E0B]" />
+                <span className="text-xs text-gray-600">Moyen</span>
+              </div>
+            </div>
+          </div>
           {loading && (
             <div className="absolute inset-0 z-[1000] bg-white/60 flex items-center justify-center">
               <div className="text-sm text-gray-500 font-medium">Chargement des données ADEME...</div>
