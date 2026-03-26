@@ -145,7 +145,7 @@ export async function fetchAdemeRecords(
     params.set("after", ((filters.page - 1) * (filters.size || 100)).toString());
   }
 
-  params.set("sort", "date_etablissement_dpe:-1");
+  params.set("sort", "-date_etablissement_dpe");
   params.set("select", SELECT_FIELDS);
 
   const res = await fetch(`${BASE_URL}?${params.toString()}`, {
