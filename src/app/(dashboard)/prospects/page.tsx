@@ -48,6 +48,12 @@ export default function ProspectsPage() {
       if (spec.filters.isolationEnveloppe) params.set("isolationEnveloppe", spec.filters.isolationEnveloppe);
       if (spec.filters.isolationMenuiseries) params.set("isolationMenuiseries", spec.filters.isolationMenuiseries);
 
+      if (specialty !== "all") params.set("specialty", specialty);
+      if (profile) {
+        params.set("artisanLat", profile.latitude.toString());
+        params.set("artisanLng", profile.longitude.toString());
+      }
+
       const res = await fetch(`/api/prospects?${params.toString()}`);
       const data = await res.json();
       setProspects(data.results || []);

@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
   const isolationMurs = searchParams.get("isolationMurs");
   const isolationEnveloppe = searchParams.get("isolationEnveloppe");
   const isolationMenuiseries = searchParams.get("isolationMenuiseries");
+  const specialty = searchParams.get("specialty") || undefined;
+  const artisanLat = searchParams.get("artisanLat") ? parseFloat(searchParams.get("artisanLat")!) : undefined;
+  const artisanLng = searchParams.get("artisanLng") ? parseFloat(searchParams.get("artisanLng")!) : undefined;
   const page = parseInt(searchParams.get("page") || "1");
   const pageSize = 20;
 
@@ -32,8 +35,10 @@ export async function GET(request: NextRequest) {
       page,
     });
 
+    const ctx = { specialty, artisanLat, artisanLng };
+
     const results = data.results
-      .map(ademeToPublic)
+      .map((r) => ademeToPublic(r, ctx))
       .filter((r): r is NonNullable<typeof r> => r !== null)
       .sort((a, b) => b.score - a.score);
 

@@ -14,6 +14,9 @@ export async function GET(request: NextRequest) {
   const isolationMurs = searchParams.get("isolationMurs");
   const isolationEnveloppe = searchParams.get("isolationEnveloppe");
   const isolationMenuiseries = searchParams.get("isolationMenuiseries");
+  const specialty = searchParams.get("specialty") || undefined;
+  const artisanLat = searchParams.get("artisanLat") ? parseFloat(searchParams.get("artisanLat")!) : undefined;
+  const artisanLng = searchParams.get("artisanLng") ? parseFloat(searchParams.get("artisanLng")!) : undefined;
 
   try {
     const data = await fetchAdemeRecords({
@@ -29,8 +32,10 @@ export async function GET(request: NextRequest) {
       size: 500,
     });
 
+    const ctx = { specialty, artisanLat, artisanLng };
+
     const points = data.results
-      .map(ademeToMapPoint)
+      .map((r) => ademeToMapPoint(r, ctx))
       .filter((p): p is NonNullable<typeof p> => p !== null);
 
     return NextResponse.json({ points, total: data.total });

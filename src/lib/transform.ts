@@ -32,7 +32,13 @@ function jitterCoord(value: number, seed: string, axis: "lat" | "lng"): number {
   return value + offset;
 }
 
-function scoreFromRecord(record: AdemeRecord): number {
+function scoreFromRecord(record: AdemeRecord, specialty?: string, artisanLat?: number, artisanLng?: number): number {
+  const geo = parseGeopoint(record._geopoint);
+  let dist: number | undefined;
+  if (artisanLat !== undefined && artisanLng !== undefined && geo) {
+    dist = distanceKm(artisanLat, artisanLng, geo.lat, geo.lng);
+  }
+
   return computeScore({
     etiquetteDpe: record.etiquette_dpe,
     typeEnergieChauffage: record.type_energie_principale_chauffage || "",
@@ -42,7 +48,11 @@ function scoreFromRecord(record: AdemeRecord): number {
     dateEtablissementDpe: new Date(record.date_etablissement_dpe),
     hasOwnerInfo: false,
     isolationMurs: record.qualite_isolation_murs || null,
-    isolationToiture: record.qualite_isolation_enveloppe || null,
+    isolationEnveloppe: record.qualite_isolation_enveloppe || null,
+    isolationMenuiseries: record.qualite_isolation_menuiseries || null,
+    isolationPlancher: record.qualite_isolation_plancher_bas || null,
+    distanceKm: dist,
+    specialty,
   });
 }
 
@@ -55,7 +65,13 @@ function getIsolationResume(record: AdemeRecord): string | null {
   return null;
 }
 
-export function ademeToPublic(record: AdemeRecord): ProspectPublic | null {
+export interface TransformContext {
+  specialty?: string;
+  artisanLat?: number;
+  artisanLng?: number;
+}
+
+export function ademeToPublic(record: AdemeRecord, ctx?: TransformContext): ProspectPublic | null {
   const geo = parseGeopoint(record._geopoint);
   if (!geo) return null;
 
@@ -68,7 +84,7 @@ export function ademeToPublic(record: AdemeRecord): ProspectPublic | null {
     typeBatiment: record.type_batiment || "Inconnu",
     typeEnergieChauffage: record.type_energie_principale_chauffage || "Inconnu",
     surfaceRange: getSurfaceRange(record.surface_habitable_logement || 0),
-    score: scoreFromRecord(record),
+    score: scoreFromRecord(record, ctx?.specialty, ctx?.artisanLat, ctx?.artisanLng),
     hasOwnerInfo: false,
     coutAnnuel: record.cout_total_5_usages || null,
     isolationResume: getIsolationResume(record),
@@ -77,8 +93,8 @@ export function ademeToPublic(record: AdemeRecord): ProspectPublic | null {
   };
 }
 
-export function ademeToDetail(record: AdemeRecord): ProspectDetail | null {
-  const pub = ademeToPublic(record);
+export function ademeToDetail(record: AdemeRecord, ctx?: TransformContext): ProspectDetail | null {
+  const pub = ademeToPublic(record, ctx);
   if (!pub) return null;
 
   return {
@@ -101,7 +117,7 @@ export function ademeToDetail(record: AdemeRecord): ProspectDetail | null {
   };
 }
 
-export function ademeToMapPoint(record: AdemeRecord): MapPoint | null {
+export function ademeToMapPoint(record: AdemeRecord, ctx?: TransformContext): MapPoint | null {
   const geo = parseGeopoint(record._geopoint);
   if (!geo) return null;
 
@@ -111,6 +127,6 @@ export function ademeToMapPoint(record: AdemeRecord): MapPoint | null {
     lng: jitterCoord(geo.lng, record.numero_dpe, "lng"),
     dpe: record.etiquette_dpe,
     city: record.nom_commune_ban || "Inconnu",
-    score: scoreFromRecord(record),
+    score: scoreFromRecord(record, ctx?.specialty, ctx?.artisanLat, ctx?.artisanLng),
   };
 }
