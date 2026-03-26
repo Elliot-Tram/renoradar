@@ -1,11 +1,12 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import DpeBadge from "@/components/DpeBadge";
 import ScoreBadge from "@/components/ScoreBadge";
+import { getProfile } from "@/lib/profile";
 import type { ProspectDetail } from "@/types";
 
 function LockIcon() {
@@ -28,12 +29,22 @@ function getIsolationColor(value: string | null): string {
 
 export default function ProspectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const profileRef = useRef(getProfile());
+  const profile = profileRef.current;
   const [prospect, setProspect] = useState<ProspectDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/prospects/${id}`)
+    const params = new URLSearchParams();
+    if (profile?.specialty) params.set("specialty", profile.specialty);
+    if (profile) {
+      params.set("artisanLat", profile.latitude.toString());
+      params.set("artisanLng", profile.longitude.toString());
+    }
+    const qs = params.toString() ? `?${params.toString()}` : "";
+
+    fetch(`/api/prospects/${id}${qs}`)
       .then((res) => {
         if (!res.ok) throw new Error("Not found");
         return res.json();

@@ -7,6 +7,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const { searchParams } = request.nextUrl;
+
+  const specialty = searchParams.get("specialty") || undefined;
+  const artisanLat = searchParams.get("artisanLat") ? parseFloat(searchParams.get("artisanLat")!) : undefined;
+  const artisanLng = searchParams.get("artisanLng") ? parseFloat(searchParams.get("artisanLng")!) : undefined;
 
   try {
     const record = await fetchAdemeByDpeId(id);
@@ -18,7 +23,9 @@ export async function GET(
       );
     }
 
-    const detail = ademeToDetail(record);
+    const ctx = { specialty, artisanLat, artisanLng };
+    const detail = ademeToDetail(record, ctx);
+
     if (!detail) {
       return NextResponse.json(
         { error: "Données géographiques manquantes" },
