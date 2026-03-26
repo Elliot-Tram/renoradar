@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
     });
 
     const results = data.results
-      .filter((r) => r.latitude_ban && r.longitude_ban)
       .map(ademeToPublic)
+      .filter((r): r is NonNullable<typeof r> => r !== null)
       .sort((a, b) => b.score - a.score);
 
     return NextResponse.json({

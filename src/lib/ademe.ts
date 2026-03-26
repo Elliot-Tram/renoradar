@@ -8,8 +8,8 @@ export interface AdemeFilters {
   typeEnergieChauffage?: string;
   surfaceMin?: number;
   surfaceMax?: number;
-  dateMin?: string; // YYYY-MM-DD
-  isolationMurs?: string; // "bonne", "insuffisante", etc.
+  dateMin?: string;
+  isolationMurs?: string;
   isolationEnveloppe?: string;
   isolationMenuiseries?: string;
   size?: number;
@@ -22,11 +22,11 @@ interface AdemeResponse {
 }
 
 export interface AdemeRecord {
-  n_dpe: string;
+  numero_dpe: string;
   etiquette_dpe: string;
   date_etablissement_dpe: string;
-  consommation_energie: number;
-  emission_ges: number;
+  conso_5_usages_par_m2_ef: number;
+  emission_ges_5_usages_par_m2: number;
   cout_total_5_usages: number;
   cout_chauffage: number;
   type_batiment: string;
@@ -34,29 +34,24 @@ export interface AdemeRecord {
   annee_construction: number;
   nombre_niveau_logement: number;
   type_energie_principale_chauffage: string;
-  type_installation_chauffage: string;
-  type_energie_chauffage_appoint: string;
   type_energie_principale_ecs: string;
   qualite_isolation_murs: string;
   qualite_isolation_enveloppe: string;
   qualite_isolation_plancher_bas: string;
   qualite_isolation_menuiseries: string;
-  type_vitrage: string;
   adresse_ban: string;
   code_postal_ban: string;
   nom_commune_ban: string;
   code_departement_ban: string;
-  latitude_ban: number;
-  longitude_ban: number;
-  code_commune_ban: string;
+  _geopoint: string; // "lat,lon"
 }
 
 const SELECT_FIELDS = [
-  "n_dpe",
+  "numero_dpe",
   "etiquette_dpe",
   "date_etablissement_dpe",
-  "consommation_energie",
-  "emission_ges",
+  "conso_5_usages_par_m2_ef",
+  "emission_ges_5_usages_par_m2",
   "cout_total_5_usages",
   "cout_chauffage",
   "type_batiment",
@@ -64,21 +59,16 @@ const SELECT_FIELDS = [
   "annee_construction",
   "nombre_niveau_logement",
   "type_energie_principale_chauffage",
-  "type_installation_chauffage",
-  "type_energie_chauffage_appoint",
   "type_energie_principale_ecs",
   "qualite_isolation_murs",
   "qualite_isolation_enveloppe",
   "qualite_isolation_plancher_bas",
   "qualite_isolation_menuiseries",
-  "type_vitrage",
   "adresse_ban",
   "code_postal_ban",
   "nom_commune_ban",
   "code_departement_ban",
-  "latitude_ban",
-  "longitude_ban",
-  "code_commune_ban",
+  "_geopoint",
 ].join(",");
 
 function getHeaders(): Record<string, string> {
@@ -87,6 +77,13 @@ function getHeaders(): Record<string, string> {
     headers["Authorization"] = `Bearer ${process.env.ADEME_API_KEY}`;
   }
   return headers;
+}
+
+export function parseGeopoint(geopoint: string | null): { lat: number; lng: number } | null {
+  if (!geopoint) return null;
+  const [lat, lng] = geopoint.split(",").map(Number);
+  if (isNaN(lat) || isNaN(lng)) return null;
+  return { lat, lng };
 }
 
 export async function fetchAdemeRecords(
@@ -167,7 +164,7 @@ export async function fetchAdemeByDpeId(
   nDpe: string
 ): Promise<AdemeRecord | null> {
   const params = new URLSearchParams({
-    n_dpe_eq: nDpe,
+    numero_dpe_eq: nDpe,
     size: "1",
     select: SELECT_FIELDS,
   });

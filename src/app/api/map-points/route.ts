@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
     });
 
     const points = data.results
-      .filter((r) => r.latitude_ban && r.longitude_ban)
-      .map(ademeToMapPoint);
+      .map(ademeToMapPoint)
+      .filter((p): p is NonNullable<typeof p> => p !== null);
 
     return NextResponse.json({ points, total: data.total });
   } catch (error) {

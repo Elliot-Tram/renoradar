@@ -18,7 +18,15 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(ademeToDetail(record));
+    const detail = ademeToDetail(record);
+    if (!detail) {
+      return NextResponse.json(
+        { error: "Données géographiques manquantes" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(detail);
   } catch (error) {
     console.error("ADEME API error:", error);
     return NextResponse.json(
