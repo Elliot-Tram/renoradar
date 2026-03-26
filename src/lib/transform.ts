@@ -65,6 +65,17 @@ function getIsolationResume(record: AdemeRecord): string | null {
   return null;
 }
 
+/**
+ * Nettoie les noms de communes cassés par l'encodage ADEME.
+ */
+function cleanCityName(name: string): string {
+  return name
+    .replace(/Bar ul$/i, "Baroeul")          // Marcq-en-Baroeul
+    .replace(/Bar\u00c5\u201cul$/i, "Baroeul")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 export interface TransformContext {
   specialty?: string;
   artisanLat?: number;
@@ -77,7 +88,7 @@ export function ademeToPublic(record: AdemeRecord, ctx?: TransformContext): Pros
 
   return {
     id: record.numero_dpe,
-    city: record.nom_commune_ban || "Inconnu",
+    city: cleanCityName(record.nom_commune_ban || "Inconnu"),
     department: record.code_departement_ban || "",
     postalCode: record.code_postal_ban || "",
     etiquetteDpe: record.etiquette_dpe,
@@ -126,7 +137,7 @@ export function ademeToMapPoint(record: AdemeRecord, ctx?: TransformContext): Ma
     lat: jitterCoord(geo.lat, record.numero_dpe, "lat"),
     lng: jitterCoord(geo.lng, record.numero_dpe, "lng"),
     dpe: record.etiquette_dpe,
-    city: record.nom_commune_ban || "Inconnu",
+    city: cleanCityName(record.nom_commune_ban || "Inconnu"),
     score: scoreFromRecord(record, ctx?.specialty, ctx?.artisanLat, ctx?.artisanLng),
   };
 }

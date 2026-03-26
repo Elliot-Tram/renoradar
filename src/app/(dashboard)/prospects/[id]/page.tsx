@@ -415,8 +415,8 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
                 <p className="text-sm text-gray-500 mb-4">
                   Envoyez une carte manuscrite personnalisée à ce propriétaire via Manuscry. Livraison J+2.
                 </p>
-                <Button className="w-full" size="lg">
-                  Envoyer un courrier — 3,50 €
+                <Button className="w-full whitespace-nowrap" size="lg">
+                  Envoyer un courrier — 3,50€
                 </Button>
               </Card>
             </>
