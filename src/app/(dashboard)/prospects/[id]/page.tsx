@@ -7,6 +7,8 @@ import Card from "@/components/ui/Card";
 import DpeBadge from "@/components/DpeBadge";
 import ScoreBadge from "@/components/ScoreBadge";
 import { getProfile } from "@/lib/profile";
+import { getSpecialtyById } from "@/lib/specialties";
+import { distanceKm } from "@/lib/transform";
 import type { ProspectDetail } from "@/types";
 
 function LockIcon() {
@@ -25,6 +27,89 @@ function getIsolationColor(value: string | null): string {
   if (v.includes("moyenne") || v.includes("moyen")) return "text-orange-500";
   if (v.includes("bonne") || v.includes("très")) return "text-green-600";
   return "text-gray-900";
+}
+
+function getDpeFreshness(dateStr: string): { label: string; badge: string; color: string } {
+  const date = new Date(dateStr);
+  const months = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30);
+  if (months <= 1) return { label: `il y a ${Math.max(1, Math.round(months * 30))} jours`, badge: "Propriétaire en démarche active", color: "text-green-700 bg-green-50 border-green-200" };
+  if (months <= 6) return { label: `il y a ${Math.round(months)} mois`, badge: "DPE récent", color: "text-green-700 bg-green-50 border-green-200" };
+  if (months <= 18) return { label: `il y a ${Math.round(months)} mois`, badge: "DPE frais", color: "text-amber-700 bg-amber-50 border-amber-200" };
+  return { label: `il y a ${Math.round(months)} mois`, badge: "", color: "" };
+}
+
+function getUrgencyBanner(dpe: string): { text: string; color: string } | null {
+  if (dpe === "G") return { text: "Ce logement ne peut plus être mis en location depuis le 1er janvier 2025", color: "bg-red-50 border-red-200 text-red-800" };
+  if (dpe === "F") return { text: "Ce logement ne pourra plus être loué à partir du 1er janvier 2028", color: "bg-orange-50 border-orange-200 text-orange-800" };
+  if (dpe === "E") return { text: "Interdiction de location prévue en 2034", color: "bg-amber-50 border-amber-200 text-amber-800" };
+  return null;
+}
+
+function getWhyThisLead(prospect: ProspectDetail, specialty: string): string[] {
+  const reasons: string[] = [];
+  const chauffage = prospect.typeEnergieChauffage?.toLowerCase() || "";
+  const envOk = prospect.isolationEnveloppe?.toLowerCase().includes("bonne");
+  const mursInsuf = prospect.isolationMurs?.toLowerCase().includes("insuffisant");
+  const menuInsuf = prospect.isolationMenuiseries?.toLowerCase().includes("insuffisant");
+
+  switch (specialty) {
+    case "pac":
+      if (chauffage.includes("fioul")) reasons.push("Chauffage au fioul, remplacement quasi-certain");
+      if (envOk) reasons.push("Isolation bonne, compatible PAC directement");
+      if (prospect.coutAnnuel && prospect.coutAnnuel > 3000) reasons.push(`Facture élevée (${Math.round(prospect.coutAnnuel).toLocaleString("fr-FR")} €/an), forte motivation`);
+      if (prospect.surfaceHabitable >= 100) reasons.push(`Grande surface (${Math.round(prospect.surfaceHabitable)} m²), chantier valorisant`);
+      break;
+    case "isolation-murs":
+      if (mursInsuf) reasons.push("Murs insuffisants, poste de déperdition principal");
+      if (prospect.etiquetteDpe === "G" || prospect.etiquetteDpe === "F") reasons.push(`DPE ${prospect.etiquetteDpe}, obligation réglementaire`);
+      if (prospect.surfaceHabitable >= 100) reasons.push(`${Math.round(prospect.surfaceHabitable)} m² de murs à isoler`);
+      break;
+    case "menuiseries":
+      if (menuInsuf) reasons.push("Menuiseries insuffisantes, remplacement nécessaire");
+      if (prospect.etiquetteDpe === "G" || prospect.etiquetteDpe === "F") reasons.push(`DPE ${prospect.etiquetteDpe}, obligation réglementaire`);
+      break;
+    case "renovation-globale":
+      if (mursInsuf) reasons.push("Murs insuffisants");
+      if (menuInsuf) reasons.push("Menuiseries insuffisantes");
+      if (prospect.surfaceHabitable >= 100) reasons.push(`${Math.round(prospect.surfaceHabitable)} m², chantier multi-postes`);
+      if (prospect.coutAnnuel && prospect.coutAnnuel > 4000) reasons.push(`Facture de ${Math.round(prospect.coutAnnuel).toLocaleString("fr-FR")} €/an`);
+      break;
+    case "solaire":
+      if (chauffage.includes("élect") || chauffage.includes("elect")) reasons.push("Tout-électrique, autoconsommation maximale");
+      if (prospect.surfaceHabitable >= 120) reasons.push(`Grande toiture (~${Math.round(prospect.surfaceHabitable)} m²)`);
+      if (envOk) reasons.push("Bonne isolation, propriétaire qui investit");
+      break;
+    default:
+      if (chauffage.includes("fioul")) reasons.push("Chauffage au fioul");
+      if (prospect.etiquetteDpe === "G") reasons.push("DPE G, urgence maximale");
+      else if (prospect.etiquetteDpe === "F") reasons.push("DPE F, interdiction 2028");
+      if (prospect.coutAnnuel && prospect.coutAnnuel > 3000) reasons.push(`Facture ${Math.round(prospect.coutAnnuel).toLocaleString("fr-FR")} €/an`);
+  }
+
+  // Fraîcheur DPE
+  const months = (Date.now() - new Date(prospect.dateEtablissementDpe).getTime()) / (1000 * 60 * 60 * 24 * 30);
+  if (months <= 3) reasons.push("DPE très récent, propriétaire en démarche active");
+
+  return reasons.slice(0, 4);
+}
+
+function estimateSavings(prospect: ProspectDetail, specialty: string): string | null {
+  if (!prospect.coutAnnuel || prospect.coutAnnuel <= 0) return null;
+  const chauffage = prospect.typeEnergieChauffage?.toLowerCase() || "";
+
+  if (specialty === "pac" && (chauffage.includes("fioul") || chauffage.includes("gaz"))) {
+    const savings = Math.round(prospect.coutAnnuel * 0.6);
+    return `~${savings.toLocaleString("fr-FR")} €/an d'économies estimées avec une PAC`;
+  }
+  if (specialty === "isolation-murs" && prospect.coutAnnuel > 2000) {
+    const savings = Math.round(prospect.coutAnnuel * 0.25);
+    return `~${savings.toLocaleString("fr-FR")} €/an d'économies estimées après isolation des murs`;
+  }
+  if (specialty === "renovation-globale" && prospect.coutAnnuel > 3000) {
+    const savings = Math.round(prospect.coutAnnuel * 0.65);
+    return `~${savings.toLocaleString("fr-FR")} €/an d'économies estimées en rénovation globale`;
+  }
+  return null;
 }
 
 export default function ProspectPage({ params }: { params: Promise<{ id: string }> }) {
@@ -52,7 +137,7 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
       .then(setProspect)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, profile]);
 
   if (loading) {
     return (
@@ -75,6 +160,19 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
     );
   }
 
+  const specialty = profile?.specialty || "all";
+  const specLabel = getSpecialtyById(specialty);
+  const urgency = getUrgencyBanner(prospect.etiquetteDpe);
+  const freshness = getDpeFreshness(prospect.dateEtablissementDpe);
+  const reasons = getWhyThisLead(prospect, specialty);
+  const savings = estimateSavings(prospect, specialty);
+
+  // Distance
+  let dist: number | null = null;
+  if (profile) {
+    dist = Math.round(distanceKm(profile.latitude, profile.longitude, prospect.latitude, prospect.longitude));
+  }
+
   return (
     <div>
       <Link
@@ -87,19 +185,35 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
         Retour aux prospects
       </Link>
 
+      {/* Urgency banner */}
+      {urgency && (
+        <div className={`${urgency.color} border rounded-xl px-5 py-3 mb-6 text-sm font-medium`}>
+          {urgency.text}
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main info */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-3 mb-1">
                   <h1 className="font-heading text-2xl font-bold text-gray-900">{prospect.city}</h1>
                   <span className="text-gray-400">{prospect.postalCode}</span>
                 </div>
-                <p className="text-gray-500">
-                  {prospect.department === "62" ? "Pas-de-Calais" : prospect.department === "38" ? "Isère" : "Moselle"} ({prospect.department})
-                </p>
+                <div className="flex items-center gap-3 mt-1">
+                  {dist !== null && (
+                    <span className="text-sm text-gray-500">
+                      A {dist} km de {profile?.city}
+                    </span>
+                  )}
+                  {freshness.badge && (
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full border ${freshness.color}`}>
+                      {freshness.badge}
+                    </span>
+                  )}
+                </div>
               </div>
               <ScoreBadge score={prospect.score} />
             </div>
@@ -124,6 +238,32 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
             </div>
           </Card>
 
+          {/* Why this lead */}
+          {reasons.length > 0 && (
+            <Card>
+              <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">
+                Pourquoi ce prospect {specialty !== "all" ? `pour ${specLabel.label.toLowerCase()}` : ""}
+              </h2>
+              <div className="space-y-3">
+                {reasons.map((reason, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-chartreuse/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6.5l3 3L10 3" stroke="#9EC22A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                    <span className="text-sm text-gray-700">{reason}</span>
+                  </div>
+                ))}
+              </div>
+              {savings && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-sm font-medium text-green-800">{savings}</p>
+                </div>
+              )}
+            </Card>
+          )}
+
           {/* DPE details */}
           <Card>
             <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Diagnostic énergétique</h2>
@@ -131,24 +271,27 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
               <div>
                 <span className="text-xs text-gray-400 uppercase tracking-wider">Consommation</span>
                 <p className="font-heading text-2xl font-bold text-gray-900 mt-1">
-                  {prospect.consommationEnergie ? Math.round(prospect.consommationEnergie) : "—"}{" "}
+                  {prospect.consommationEnergie ? Math.round(prospect.consommationEnergie) : "\u2014"}{" "}
                   <span className="text-sm text-gray-400 font-normal">kWh/m²/an</span>
                 </p>
               </div>
               <div>
                 <span className="text-xs text-gray-400 uppercase tracking-wider">Facture annuelle</span>
                 <p className="font-heading text-2xl font-bold text-gray-900 mt-1">
-                  {prospect.coutAnnuel ? `${Math.round(prospect.coutAnnuel).toLocaleString("fr-FR")} €` : "—"}
+                  {prospect.coutAnnuel ? `${Math.round(prospect.coutAnnuel).toLocaleString("fr-FR")} \u20AC` : "\u2014"}
                   <span className="text-sm text-gray-400 font-normal"> /an</span>
                 </p>
               </div>
               <div>
                 <span className="text-xs text-gray-400 uppercase tracking-wider">Année construction</span>
-                <p className="font-heading text-xl font-bold text-gray-900 mt-1">{prospect.anneeConstruction || "—"}</p>
+                <p className="font-heading text-xl font-bold text-gray-900 mt-1">{prospect.anneeConstruction || "\u2014"}</p>
               </div>
               <div>
-                <span className="text-xs text-gray-400 uppercase tracking-wider">Niveaux</span>
-                <p className="font-heading text-xl font-bold text-gray-900 mt-1">{prospect.nbNiveaux || "—"}</p>
+                <span className="text-xs text-gray-400 uppercase tracking-wider">DPE établi</span>
+                <p className="font-heading text-xl font-bold text-gray-900 mt-1">
+                  {new Date(prospect.dateEtablissementDpe).toLocaleDateString("fr-FR")}
+                </p>
+                <p className="text-xs text-gray-400">{freshness.label}</p>
               </div>
             </div>
           </Card>
@@ -167,7 +310,7 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
                 <div key={item.label} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                   <span className="text-sm text-gray-500">{item.label}</span>
                   <span className={`text-sm font-medium ${getIsolationColor(item.value)}`}>
-                    {item.value || "—"}
+                    {item.value || "\u2014"}
                   </span>
                 </div>
               ))}
@@ -175,7 +318,7 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
           </Card>
         </div>
 
-        {/* Sidebar - locked info */}
+        {/* Sidebar */}
         <div className="space-y-6">
           <Card>
             <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Informations verrouillées</h2>
@@ -212,8 +355,6 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
           </Card>
 
           <div className="text-xs text-gray-400 text-center">
-            DPE du {new Date(prospect.dateEtablissementDpe).toLocaleDateString("fr-FR")}
-            <br />
             Source : ADEME (Licence Ouverte v2.0)
           </div>
         </div>
