@@ -185,13 +185,6 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
         Retour aux prospects
       </Link>
 
-      {/* Urgency banner */}
-      {urgency && (
-        <div className={`${urgency.color} border rounded-xl px-5 py-3 mb-6 text-sm font-medium`}>
-          {urgency.text}
-        </div>
-      )}
-
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Main info */}
         <div className="lg:col-span-2 space-y-6">
@@ -259,6 +252,11 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
               {savings && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl">
                   <p className="text-sm font-medium text-green-800">{savings}</p>
+                </div>
+              )}
+              {urgency && (
+                <div className={`mt-4 p-4 ${urgency.color} border rounded-xl`}>
+                  <p className="text-sm font-medium">{urgency.text}</p>
                 </div>
               )}
             </Card>
