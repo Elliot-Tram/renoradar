@@ -12,8 +12,18 @@ const DEPT_CENTERS: Record<string, [number, number]> = {
   "57": [49.12, 6.18],
 };
 
-function getDpeColor(dpe: string): string {
-  return dpe === "G" ? "#EE1D23" : "#F08C1E";
+function getScoreColor(score: number): string {
+  if (score >= 80) return "#22C55E"; // vert — excellent
+  if (score >= 65) return "#C8F23D"; // chartreuse — bon
+  if (score >= 50) return "#F59E0B"; // amber — moyen
+  return "#9CA3AF";                  // gris — faible
+}
+
+function getScoreRadius(score: number): number {
+  if (score >= 80) return 10;
+  if (score >= 65) return 8;
+  if (score >= 50) return 7;
+  return 5;
 }
 
 function RecenterMap({ center, zoom }: { center: [number, number]; zoom: number }) {
@@ -69,31 +79,35 @@ export default function Map({ department, points, center, zoom, radiusKm }: MapP
           }}
         />
       )}
-      {points.map((point) => (
-        <CircleMarker
-          key={point.id}
-          center={[point.lat, point.lng]}
-          radius={8}
-          pathOptions={{
-            fillColor: getDpeColor(point.dpe),
-            fillOpacity: 0.6,
-            color: getDpeColor(point.dpe),
-            weight: 2,
-            opacity: 0.8,
-          }}
-          eventHandlers={{
-            click: () => router.push(`/prospects/${point.id}`),
-          }}
-        >
-          <Tooltip>
-            <div className="font-body text-sm">
-              <strong>{point.city}</strong> — DPE {point.dpe}
-              <br />
-              Score : {point.score}/100
-            </div>
-          </Tooltip>
-        </CircleMarker>
-      ))}
+      {points.map((point) => {
+        const color = getScoreColor(point.score);
+        const radius = getScoreRadius(point.score);
+        return (
+          <CircleMarker
+            key={point.id}
+            center={[point.lat, point.lng]}
+            radius={radius}
+            pathOptions={{
+              fillColor: color,
+              fillOpacity: 0.7,
+              color: color,
+              weight: 2,
+              opacity: 0.9,
+            }}
+            eventHandlers={{
+              click: () => router.push(`/prospects/${point.id}`),
+            }}
+          >
+            <Tooltip>
+              <div className="font-body text-sm">
+                <strong>{point.city}</strong> — DPE {point.dpe}
+                <br />
+                Score : {point.score}/100
+              </div>
+            </Tooltip>
+          </CircleMarker>
+        );
+      })}
     </MapContainer>
   );
 }

@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import { getSpecialtyById } from "@/lib/specialties";
 import { getProfile, radiusToZoom } from "@/lib/profile";
 import { distanceKm } from "@/lib/transform";
+import { getDepartmentsForRadius } from "@/lib/departments";
 import type { MapPoint } from "@/types";
 
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
@@ -35,27 +36,43 @@ export default function CartePage() {
         const spec = getSpecialtyById(specialty);
         const dpe = spec.filters.etiquetteDpe || ["F", "G"];
 
-        const params = new URLSearchParams({ department, dpe: dpe.join(",") });
+        // Charger les départements voisins si le rayon est grand
+        const departments = profile
+          ? getDepartmentsForRadius(department, profile.radiusKm)
+          : [department];
 
-        if (spec.filters.typeEnergieChauffage) params.set("chauffage", spec.filters.typeEnergieChauffage);
-        if (spec.filters.surfaceMin) params.set("surfaceMin", spec.filters.surfaceMin.toString());
-        if (spec.filters.isolationMurs) params.set("isolationMurs", spec.filters.isolationMurs);
-        if (spec.filters.isolationEnveloppe) params.set("isolationEnveloppe", spec.filters.isolationEnveloppe);
-        if (spec.filters.isolationMenuiseries) params.set("isolationMenuiseries", spec.filters.isolationMenuiseries);
+        const allPoints: MapPoint[] = [];
 
-        if (specialty !== "all") params.set("specialty", specialty);
-        if (profile) {
-          params.set("artisanLat", profile.latitude.toString());
-          params.set("artisanLng", profile.longitude.toString());
+        // Fetch en parallèle pour chaque département
+        const fetches = departments.map(async (dept) => {
+          const params = new URLSearchParams({ department: dept, dpe: dpe.join(",") });
+
+          if (spec.filters.typeEnergieChauffage) params.set("chauffage", spec.filters.typeEnergieChauffage);
+          if (spec.filters.surfaceMin) params.set("surfaceMin", spec.filters.surfaceMin.toString());
+          if (spec.filters.isolationMurs) params.set("isolationMurs", spec.filters.isolationMurs);
+          if (spec.filters.isolationEnveloppe) params.set("isolationEnveloppe", spec.filters.isolationEnveloppe);
+          if (spec.filters.isolationMenuiseries) params.set("isolationMenuiseries", spec.filters.isolationMenuiseries);
+
+          if (specialty !== "all") params.set("specialty", specialty);
+          if (profile) {
+            params.set("artisanLat", profile.latitude.toString());
+            params.set("artisanLng", profile.longitude.toString());
+          }
+
+          const res = await fetch(`/api/map-points?${params.toString()}`);
+          const data = await res.json();
+          return data.points || [];
+        });
+
+        const results = await Promise.all(fetches);
+        for (const pts of results) {
+          allPoints.push(...pts);
         }
 
-        const res = await fetch(`/api/map-points?${params.toString()}`);
-        const data = await res.json();
-
-        let filteredPoints: MapPoint[] = data.points || [];
-
+        // Filtrer par rayon
+        let filteredPoints = allPoints;
         if (profile) {
-          filteredPoints = filteredPoints.filter((p) =>
+          filteredPoints = allPoints.filter((p) =>
             distanceKm(profile.latitude, profile.longitude, p.lat, p.lng) <= profile.radiusKm
           );
         }
