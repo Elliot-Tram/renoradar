@@ -10,6 +10,25 @@ export interface ArtisanProfile {
 }
 
 const STORAGE_KEY = "renoradar_profile";
+const ADMIN_KEY = "renoradar_admin";
+const ADMIN_PASSWORD = "demo1234";
+
+export function checkAdmin(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(ADMIN_KEY) === "true";
+}
+
+export function activateAdmin(password: string): boolean {
+  if (password === ADMIN_PASSWORD) {
+    localStorage.setItem(ADMIN_KEY, "true");
+    return true;
+  }
+  return false;
+}
+
+export function isAdmin(): boolean {
+  return checkAdmin();
+}
 
 export function getProfile(): ArtisanProfile | null {
   if (typeof window === "undefined") return null;

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
-import { saveProfile, extractDepartment } from "@/lib/profile";
+import { saveProfile, extractDepartment, activateAdmin } from "@/lib/profile";
 import { SPECIALTIES } from "@/lib/specialties";
 
 const RADIUS_OPTIONS = [
@@ -35,6 +35,7 @@ export default function OnboardingPage() {
   const [radiusKm, setRadiusKm] = useState(30);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [adminCode, setAdminCode] = useState("");
 
   const specialties = SPECIALTIES.filter((s) => s.id !== "all");
 
@@ -85,6 +86,8 @@ export default function OnboardingPage() {
       longitude: selectedCity.lng,
       radiusKm,
     });
+
+    if (adminCode) activateAdmin(adminCode);
 
     router.push("/carte");
   }
@@ -276,6 +279,16 @@ export default function OnboardingPage() {
                 <span className="text-sm text-gray-500">Zone</span>
                 <span className="text-sm font-medium text-gray-900">{radiusKm} km autour de {selectedCity?.city}</span>
               </div>
+            </div>
+
+            <div className="mb-6">
+              <input
+                type="password"
+                value={adminCode}
+                onChange={(e) => setAdminCode(e.target.value)}
+                placeholder="Code d'accès (optionnel)"
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-chartreuse/50 focus:border-chartreuse text-gray-400"
+              />
             </div>
 
             <div className="flex gap-3">

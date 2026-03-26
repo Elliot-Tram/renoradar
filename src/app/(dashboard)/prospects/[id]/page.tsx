@@ -6,10 +6,17 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import DpeBadge from "@/components/DpeBadge";
 import ScoreBadge from "@/components/ScoreBadge";
-import { getProfile } from "@/lib/profile";
+import { getProfile, isAdmin } from "@/lib/profile";
 import { getSpecialtyById } from "@/lib/specialties";
 import { distanceKm } from "@/lib/transform";
 import type { ProspectDetail } from "@/types";
+
+interface OwnerInfo {
+  type: string;
+  nom: string | null;
+  dirigeant: string | null;
+  siren: string | null;
+}
 
 function LockIcon() {
   return (
@@ -116,7 +123,9 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
   const { id } = use(params);
   const profileRef = useRef(getProfile());
   const profile = profileRef.current;
+  const admin = useRef(isAdmin()).current;
   const [prospect, setProspect] = useState<ProspectDetail | null>(null);
+  const [owner, setOwner] = useState<OwnerInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -127,6 +136,7 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
       params.set("artisanLat", profile.latitude.toString());
       params.set("artisanLng", profile.longitude.toString());
     }
+    if (admin) params.set("unlocked", "true");
     const qs = params.toString() ? `?${params.toString()}` : "";
 
     fetch(`/api/prospects/${id}${qs}`)
@@ -134,10 +144,41 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
         if (!res.ok) throw new Error("Not found");
         return res.json();
       })
-      .then(setProspect)
+      .then((data) => {
+        setProspect(data);
+        // Si admin et adresse disponible, chercher le propriétaire
+        if (admin && data.address) {
+          fetch(`https://recherche-entreprises.api.gouv.fr/search?q=${encodeURIComponent(data.address)}&page=1&per_page=3`)
+            .then((r) => r.json())
+            .then((entreprises) => {
+              const results = entreprises.results || [];
+              const sci = results.find((e: { nature_juridique: string; nom_complet: string }) =>
+                e.nature_juridique === "6540" || e.nom_complet?.toLowerCase().includes("sci")
+              );
+              if (sci) {
+                const dirigeant = sci.dirigeants?.[0];
+                setOwner({
+                  type: "SCI",
+                  nom: sci.nom_complet,
+                  dirigeant: dirigeant ? `${dirigeant.prenom || ""} ${dirigeant.nom || ""}`.trim() : null,
+                  siren: sci.siren,
+                });
+              } else if (results.length > 0) {
+                const first = results[0];
+                setOwner({
+                  type: "Entreprise",
+                  nom: first.nom_complet,
+                  dirigeant: first.dirigeants?.[0] ? `${first.dirigeants[0].prenom || ""} ${first.dirigeants[0].nom || ""}`.trim() : null,
+                  siren: first.siren,
+                });
+              }
+            })
+            .catch(() => {});
+        }
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [id, profile]);
+  }, [id, profile, admin]);
 
   if (loading) {
     return (
@@ -318,39 +359,105 @@ export default function ProspectPage({ params }: { params: Promise<{ id: string 
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card>
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Informations verrouillées</h2>
-            <div className="space-y-3 mb-6">
-              {[
-                "Adresse complète",
-                "Nom du propriétaire",
-                "Type (SCI / particulier)",
-                "Dirigeant SCI",
-                "Argumentaire personnalisé",
-              ].map((field) => (
-                <div key={field} className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
-                  <LockIcon />
-                  <span className="text-sm text-gray-400">{field}</span>
-                </div>
-              ))}
-            </div>
-            <Button className="w-full" size="lg">
-              Débloquer — 1 crédit
-            </Button>
-            <p className="text-xs text-gray-400 text-center mt-3">
-              Votre solde : 3 crédits
-            </p>
-          </Card>
+          {prospect.isUnlocked ? (
+            <>
+              {/* Unlocked: show real info */}
+              <Card>
+                <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Adresse du bien</h2>
+                {prospect.address && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(prospect.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-chartreuse transition-colors"
+                  >
+                    <p className="font-heading font-bold text-gray-900">{prospect.address}</p>
+                    <p className="text-xs text-gray-400 mt-1">Ouvrir dans Google Maps</p>
+                  </a>
+                )}
+              </Card>
 
-          <Card>
-            <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Envoyer un courrier</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Envoyez une carte manuscrite personnalisée à ce prospect via Manuscry. Livraison J+2.
-            </p>
-            <Button variant="secondary" className="w-full" disabled>
-              Débloquez d&apos;abord la fiche
-            </Button>
-          </Card>
+              <Card>
+                <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Propriétaire</h2>
+                {owner ? (
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-xs text-gray-400 uppercase tracking-wider">Type</span>
+                      <p className="text-sm font-medium text-gray-900 mt-0.5">{owner.type}</p>
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-400 uppercase tracking-wider">Nom</span>
+                      <p className="text-sm font-medium text-gray-900 mt-0.5">{owner.nom || "Non identifié"}</p>
+                    </div>
+                    {owner.dirigeant && (
+                      <div>
+                        <span className="text-xs text-gray-400 uppercase tracking-wider">Dirigeant</span>
+                        <p className="text-sm font-medium text-gray-900 mt-0.5">{owner.dirigeant}</p>
+                      </div>
+                    )}
+                    {owner.siren && (
+                      <div>
+                        <span className="text-xs text-gray-400 uppercase tracking-wider">SIREN</span>
+                        <p className="text-sm font-medium text-gray-900 mt-0.5">{owner.siren}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500">
+                    <p>Pas de société identifiée à cette adresse.</p>
+                    <p className="mt-2 text-xs text-gray-400">Le propriétaire est probablement un particulier. Prospection par courrier postal recommandée.</p>
+                  </div>
+                )}
+              </Card>
+
+              <Card>
+                <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Envoyer un courrier</h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  Envoyez une carte manuscrite personnalisée à ce propriétaire via Manuscry. Livraison J+2.
+                </p>
+                <Button className="w-full" size="lg">
+                  Envoyer un courrier — 3,50 €
+                </Button>
+              </Card>
+            </>
+          ) : (
+            <>
+              {/* Locked */}
+              <Card>
+                <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Informations verrouillées</h2>
+                <div className="space-y-3 mb-6">
+                  {[
+                    "Adresse complète",
+                    "Nom du propriétaire",
+                    "Type (SCI / particulier)",
+                    "Dirigeant SCI",
+                    "Argumentaire personnalisé",
+                  ].map((field) => (
+                    <div key={field} className="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-lg">
+                      <LockIcon />
+                      <span className="text-sm text-gray-400">{field}</span>
+                    </div>
+                  ))}
+                </div>
+                <Button className="w-full" size="lg">
+                  Débloquer — 1 crédit
+                </Button>
+                <p className="text-xs text-gray-400 text-center mt-3">
+                  Votre solde : 3 crédits
+                </p>
+              </Card>
+
+              <Card>
+                <h2 className="font-heading text-lg font-bold text-gray-900 mb-4">Envoyer un courrier</h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  Envoyez une carte manuscrite personnalisée à ce prospect via Manuscry. Livraison J+2.
+                </p>
+                <Button variant="secondary" className="w-full" disabled>
+                  Débloquez d&apos;abord la fiche
+                </Button>
+              </Card>
+            </>
+          )}
 
           <div className="text-xs text-gray-400 text-center">
             Source : ADEME (Licence Ouverte v2.0)

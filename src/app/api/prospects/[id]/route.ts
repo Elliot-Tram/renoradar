@@ -12,6 +12,7 @@ export async function GET(
   const specialty = searchParams.get("specialty") || undefined;
   const artisanLat = searchParams.get("artisanLat") ? parseFloat(searchParams.get("artisanLat")!) : undefined;
   const artisanLng = searchParams.get("artisanLng") ? parseFloat(searchParams.get("artisanLng")!) : undefined;
+  const unlocked = searchParams.get("unlocked") === "true";
 
   try {
     const record = await fetchAdemeByDpeId(id);
@@ -31,6 +32,12 @@ export async function GET(
         { error: "Données géographiques manquantes" },
         { status: 404 }
       );
+    }
+
+    // Si débloqué, ajouter l'adresse réelle
+    if (unlocked) {
+      detail.address = record.adresse_ban || null;
+      detail.isUnlocked = true;
     }
 
     return NextResponse.json(detail);
