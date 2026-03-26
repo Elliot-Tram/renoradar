@@ -1,4 +1,9 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { getProfile, type ArtisanProfile } from "@/lib/profile";
 
 function RadarLogo({ size = 24 }: { size?: number }) {
   return (
@@ -58,12 +63,35 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [profile, setProfile] = useState<ArtisanProfile | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    const p = getProfile();
+    setProfile(p);
+    setChecked(true);
+
+    if (!p && pathname !== "/onboarding") {
+      router.replace("/onboarding");
+    }
+  }, [pathname, router]);
+
+  // Don't render sidebar on onboarding
+  if (pathname === "/onboarding") {
+    return <>{children}</>;
+  }
+
+  // Wait for profile check
+  if (!checked) return null;
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
         <div className="p-6 border-b border-gray-100">
-          <Link href="/" className="flex items-center gap-2 text-gray-900">
+          <Link href="/carte" className="flex items-center gap-2 text-gray-900">
             <RadarLogo />
             <span className="font-heading font-bold text-lg tracking-tight">RénoRadar</span>
           </Link>
@@ -74,13 +102,28 @@ export default function DashboardLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                pathname === item.href
+                  ? "bg-gray-50 text-gray-900"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
             >
-              <span className="text-gray-400">{item.icon}</span>
+              <span className={pathname === item.href ? "text-gray-900" : "text-gray-400"}>{item.icon}</span>
               {item.label}
             </Link>
           ))}
         </nav>
+
+        {/* Profile summary */}
+        {profile && (
+          <div className="p-4 border-t border-gray-100">
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="text-xs text-gray-400 uppercase tracking-wider font-medium mb-1">Mon profil</div>
+              <div className="text-sm font-medium text-gray-900">{profile.company}</div>
+              <div className="text-xs text-gray-500 mt-0.5">{profile.city} — {profile.radiusKm} km</div>
+            </div>
+          </div>
+        )}
 
         {/* Credit balance */}
         <div className="p-4 border-t border-gray-100">

@@ -5,15 +5,10 @@ import dynamic from "next/dynamic";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { SPECIALTIES, getSpecialtyById } from "@/lib/specialties";
+import { getProfile, radiusToZoom } from "@/lib/profile";
 import type { MapPoint } from "@/types";
 
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
-
-const DEPARTMENTS = [
-  { code: "62", label: "Pas-de-Calais (62)" },
-  { code: "38", label: "Isère (38)" },
-  { code: "57", label: "Moselle (57)" },
-];
 
 const CHAUFFAGE_OPTIONS = [
   { value: "", label: "Tous chauffages" },
@@ -39,19 +34,25 @@ function getDateMin(months: string): string | undefined {
 }
 
 export default function CartePage() {
-  const [department, setDepartment] = useState("62");
-  const [specialty, setSpecialty] = useState("all");
+  const profile = getProfile();
+
+  const [specialty, setSpecialty] = useState(profile?.specialty || "all");
   const [chauffage, setChauffage] = useState("");
   const [surfaceMin, setSurfaceMin] = useState(0);
   const [freshness, setFreshness] = useState("");
-  const [typeBatiment, setTypeBatiment] = useState("maison");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [points, setPoints] = useState<MapPoint[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Quand on change de spécialité, on applique ses filtres
+  const department = profile?.department || "62";
+  const mapCenter: [number, number] | undefined = profile
+    ? [profile.latitude, profile.longitude]
+    : undefined;
+  const mapZoom = profile ? radiusToZoom(profile.radiusKm) : 9;
+
+  // Init filters from specialty
   useEffect(() => {
     const spec = getSpecialtyById(specialty);
     if (spec.filters.typeEnergieChauffage) setChauffage(spec.filters.typeEnergieChauffage);
@@ -69,7 +70,6 @@ export default function CartePage() {
       const params = new URLSearchParams({ department, dpe: dpe.join(",") });
       if (chauffage) params.set("chauffage", chauffage);
       if (surfaceMin > 0) params.set("surfaceMin", surfaceMin.toString());
-      if (typeBatiment) params.set("typeBatiment", typeBatiment);
 
       const dateMin = getDateMin(freshness);
       if (dateMin) params.set("dateMin", dateMin);
@@ -88,7 +88,7 @@ export default function CartePage() {
     } finally {
       setLoading(false);
     }
-  }, [department, specialty, chauffage, surfaceMin, freshness, typeBatiment]);
+  }, [department, specialty, chauffage, surfaceMin, freshness]);
 
   useEffect(() => {
     fetchPoints();
@@ -98,11 +98,14 @@ export default function CartePage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-heading text-2xl font-bold text-gray-900">Carte des prospects</h1>
+          <h1 className="font-heading text-2xl font-bold text-gray-900">
+            {profile ? `Prospects autour de ${profile.city}` : "Carte des prospects"}
+          </h1>
           <p className="text-gray-500 mt-1">
             {loading ? "Chargement..." : (
               <>
                 <span className="font-heading font-bold text-gray-900">{total.toLocaleString("fr-FR")}</span> passoires thermiques trouvées
+                {profile && <span className="text-gray-400"> — {department}</span>}
               </>
             )}
           </p>
@@ -135,21 +138,6 @@ export default function CartePage() {
       {/* Filters */}
       <Card className="mb-6">
         <div className="flex flex-wrap items-end gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-              Département
-            </label>
-            <select
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-chartreuse/50 focus:border-chartreuse"
-            >
-              {DEPARTMENTS.map((d) => (
-                <option key={d.code} value={d.code}>{d.label}</option>
-              ))}
-            </select>
-          </div>
-
           <div>
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
               Chauffage
@@ -202,21 +190,6 @@ export default function CartePage() {
                 ))}
               </select>
             </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                Type bâtiment
-              </label>
-              <select
-                value={typeBatiment}
-                onChange={(e) => setTypeBatiment(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-chartreuse/50 focus:border-chartreuse"
-              >
-                <option value="maison">Maison</option>
-                <option value="appartement">Appartement</option>
-                <option value="">Tous</option>
-              </select>
-            </div>
           </div>
         )}
       </Card>
@@ -229,7 +202,13 @@ export default function CartePage() {
               <div className="text-sm text-gray-500 font-medium">Chargement des données ADEME...</div>
             </div>
           )}
-          <Map department={department} points={points} />
+          <Map
+            department={department}
+            points={points}
+            center={mapCenter}
+            zoom={mapZoom}
+            radiusKm={profile?.radiusKm}
+          />
         </div>
       </Card>
 

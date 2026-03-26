@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Tooltip, Circle, useMap } from "react-leaflet";
 import { useRouter } from "next/navigation";
 import "leaflet/dist/leaflet.css";
 import type { MapPoint } from "@/types";
@@ -16,13 +16,12 @@ function getDpeColor(dpe: string): string {
   return dpe === "G" ? "#EE1D23" : "#F08C1E";
 }
 
-function RecenterMap({ department }: { department: string }) {
+function RecenterMap({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
-  const center = DEPT_CENTERS[department] || DEPT_CENTERS["62"];
 
   useEffect(() => {
-    map.flyTo(center, 9, { duration: 1 });
-  }, [department, center, map]);
+    map.flyTo(center, zoom, { duration: 1 });
+  }, [center[0], center[1], zoom, map]);
 
   return null;
 }
@@ -30,24 +29,42 @@ function RecenterMap({ department }: { department: string }) {
 interface MapProps {
   department: string;
   points: MapPoint[];
+  center?: [number, number];
+  zoom?: number;
+  radiusKm?: number;
 }
 
-export default function Map({ department, points }: MapProps) {
-  const center = DEPT_CENTERS[department] || DEPT_CENTERS["62"];
+export default function Map({ department, points, center, zoom, radiusKm }: MapProps) {
+  const mapCenter = center || DEPT_CENTERS[department] || DEPT_CENTERS["62"];
+  const mapZoom = zoom || 9;
   const router = useRouter();
 
   return (
     <MapContainer
-      center={center}
-      zoom={9}
+      center={mapCenter}
+      zoom={mapZoom}
       className="h-full w-full"
       zoomControl={true}
     >
-      <RecenterMap department={department} />
+      <RecenterMap center={mapCenter} zoom={mapZoom} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
+      {/* Zone circle */}
+      {center && radiusKm && (
+        <Circle
+          center={center}
+          radius={radiusKm * 1000}
+          pathOptions={{
+            color: "#C8F23D",
+            fillColor: "#C8F23D",
+            fillOpacity: 0.04,
+            weight: 2,
+            dashArray: "8 4",
+          }}
+        />
+      )}
       {points.map((point) => (
         <CircleMarker
           key={point.id}
